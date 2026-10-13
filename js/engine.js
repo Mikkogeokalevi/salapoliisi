@@ -55,6 +55,11 @@
 
       return Engine._restore();
     }).then(function () {
+      // Tarkista onko sessio jo olemassa -> createdAt sailyy ennallaan
+      return db().collection("sessions").doc(Engine.user.uid).get()
+        .then(function (d) { Engine._sessionCreated = d.exists; })
+        .catch(function () {});
+    }).then(function () {
       return Engine._touchSession();
     });
   };
