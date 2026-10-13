@@ -88,6 +88,8 @@
   var inputMode = null; // "nick" | "final" | null
   var busy = false;
 
+  Story.init(chatEl);
+
   function beep(fn) { if (soundOn && window.Audio) { try { fn(); } catch (e) {} } }
 
   // --- Boot-sekvenssi ---------------------------------------------

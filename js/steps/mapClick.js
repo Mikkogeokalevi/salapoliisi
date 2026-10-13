@@ -43,6 +43,7 @@ window.Steps["mapClick"] = function (container, step, api) {
       if (window.Audio) window.Audio.click();
     });
     setTimeout(function () { map.invalidateSize(); }, 250);
+    setTimeout(function () { map.invalidateSize(); }, 600);
   }
 
   // Leaflet ladataan vain kun tata tyyppia tarvitaan
