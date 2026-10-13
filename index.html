@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0e14">
+<title>Salapoliisi — Tutkintakanava</title>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/game.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div id="game-root">
+
+  <!-- Ylapalkki -->
+  <header class="g-header">
+    <span class="logo">SALAPOLIISI</span>
+    <span class="status" id="conn-status">YHDISTETAAN</span>
+    <span class="spacer"></span>
+    <button class="hdr-btn" id="btn-board">TODISTEET</button>
+    <button class="hdr-btn" id="btn-sound">ÄÄNI</button>
+  </header>
+
+  <!-- Chat-virta -->
+  <div class="chat-scroll" id="chat"></div>
+
+  <!-- Syottopalkki -->
+  <div class="input-bar" id="inputbar" style="display:none">
+    <input class="input" id="main-input" placeholder="Vastaus..." autocomplete="off" autocapitalize="none" enterkeyhint="send">
+    <button class="btn primary" id="main-send">➤</button>
+  </div>
+</div>
+
+<!-- Boot-overlay -->
+<div class="boot" id="boot">
+  <div class="boot-inner">
+    <div class="boot-logo">SALAPOLIISI</div>
+    <div id="boot-lines"></div>
+  </div>
+</div>
+
+<!-- Pulma-sheet -->
+<div class="sheet-veil" id="veil"></div>
+<div class="sheet" id="sheet">
+  <div class="sheet-head">
+    <span class="grab"></span>
+    <h3 id="sheet-title">TEHTAVA</h3>
+    <button class="sheet-close" id="sheet-close">✕</button>
+  </div>
+  <div class="sheet-body" id="sheet-body"></div>
+</div>
+
+<!-- Firebase compat CDN -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script src="js/config.js"></script>
+<script src="js/firebase-init.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/story.js"></script>
+<script src="js/steps/_common.js"></script>
+<script src="js/steps/text.js"></script>
+<script src="js/steps/coords.js"></script>
+<script src="js/steps/lock.js"></script>
+<script src="js/steps/cipher.js"></script>
+<script src="js/steps/morse.js"></script>
+<script src="js/steps/wires.js"></script>
+<script src="js/steps/sequence.js"></script>
+<script src="js/steps/order.js"></script>
+<script src="js/steps/grid.js"></script>
+<script src="js/steps/mapClick.js"></script>
+
+<script>
+(function () {
+  "use strict";
+
+  var $ = function (id) { return document.getElementById(id); };
+  var bootEl = $("boot"), chatEl = $("chat"), inputbar = $("inputbar");
+  var mainInput = $("main-input"), mainSend = $("main-send");
+  var sheet = $("sheet"), veil = $("veil"), sheetBody = $("sheet-body"), sheetTitle = $("sheet-title");
+
+  var soundOn = true;
+  var inputMode = null; // "nick" | "final" | null
+  var busy = false;
+
+  function beep(fn) { if (soundOn && window.Audio) { try { fn(); } catch (e) {} } }
+
+  // --- Boot-sekvenssi ---------------------------------------------
+  var BOOT_LINES = [
+    "> Yhdistetaan tutkintakanavaan...",
+    "> Salaus kaynnissa [AES-256]........ OK",
+    "> Vahvistetaan henkilollisyytta...... OK",
+    "> Kanava auki. Tervetuloa, tutkija."
+  ];
+
+  function runBoot(done) {
+    var box = $("boot-lines");
+    var i = 0;
+    function next() {
+      if (i >= BOOT_LINES.length) {
+        setTimeout(function () {
+          bootEl.style.transition = "opacity .5s";
+          bootEl.style.opacity = "0";
+          setTimeout(function () { bootEl.style.display = "none"; done(); }, 520);
+        }, 500);
+        return;
+      }
+      var d = document.createElement("div");
+      d.className = "boot-line cursor";
+      d.textContent = BOOT_LINES[i];
+      box.appendChild(d);
+      beep(function () { window.Audio.tick(); });
+      i++;
+      setTimeout(next, 620);
+    }
+    next();
+  }
+
+  // --- Sheet (pulma-overlay) ---------------------------------------
+  var sheetOpen = false;
+  function openSheet(step) {
+    if (sheetOpen) return;
+    sheetOpen = true;
+    sheetBody.innerHTML = "";
+    sheetTitle.textContent = (step.title || "TEHTAVA").toUpperCase();
+    veil.classList.add("open");
+    sheet.classList.add("open");
+    renderStep(step);
+  }
+  function closeSheet() {
+    sheetOpen = false;
+    veil.classList.remove("open");
+    sheet.classList.remove("open");
+  }
+  veil.addEventListener("click", closeSheet);
+  $("sheet-close").addEventListener("click", closeSheet);
+
+  // --- Pulman renderointi -------------------------------------------
+  function renderStep(step) {
+    var api = {
+      try: function (guess) {
+        return Engine.submitGuess(step.id, guess).then(function (r) {
+          if (r.ok) {
+            beep(function () { window.Audio.success(); });
+            setTimeout(function () {
+              closeSheet();
+              afterSolve(step, r);
+            }, 350);
+          } else if (!r.error) {
+            beep(function () { window.Audio.error(); });
+          }
+          return r;
+        });
+      },
+      hint: function () { return Engine.nextHint(step); },
+      wrong: function () { return Engine.wrongCount(step.id); }
+    };
+    var fn = window.Steps[step.type];
+    if (fn) {
+      fn(sheetBody, step, api);
+    } else {
+      sheetBody.innerHTML = '<div class="notice err">Tuntematon pulmatyyppi: ' +
+        String(step.type) + "</div>";
+    }
+  }
+
+  // --- Pelivirta ----------------------------------------------------
+  function afterSolve(step, r) {
+    Story.system("✓ TODISTE RATKAISTU").then(function () {
+      return Story.reward(
+        r.reveal || "Hyva tyo. Tama vie meita eteenpain.",
+        r.codePart ? "KOODINPALA: " + r.codePart : null
+      );
+    }).then(function () {
+      if (r.codePart) {
+        return Story.handler(
+          "Sait koodinpalan \u201C" + r.codePart + "\u201D. Kirjaa se ylos - tarvitset kaikkia paloja loppukoodiin.",
+          { speed: 12 }
+        );
+      }
+    }).then(playNext);
+  }
+
+  function playNext() {
+    var step = Engine.currentStep();
+    if (!step) {
+      // Kaikki vaiheet ratkaistu -> loppukoodi
+      finalPhase();
+      return;
+    }
+    Story.runMessages(step.story || []).then(function () {
+      Story.taskCard(step, function (s) {
+        beep(function () { window.Audio.msg(); });
+        openSheet(s);
+      });
+    });
+  }
+
+  // --- Loppukoodi ----------------------------------------------------
+  function finalPhase() {
+    if (Engine.isComplete()) {
+      showEnding();
+      return;
+    }
+    Story.runMessages([
+      "Kaikki todisteet on ratkaistu. Erinomaista tyota.",
+      "Kokoa koodinpalat yhdeksi kokonaisuudeksi ja syota lopullinen koodi."
+    ]).then(function () {
+      inputMode = "final";
+      inputbar.style.display = "flex";
+      mainInput.placeholder = "Loppukoodi...";
+      mainInput.focus();
+    });
+  }
+
+  function showEnding() {
+    Story.system("TAPAUS RATKAISTU").then(function () {
+      var r = Engine.reveals["final"] || "";
+      return Story.reward(r || "Onnittelut - tapaus on ratkaistu!", null);
+    });
+  }
+
+  // --- Nimimerkki -----------------------------------------------------
+  function askNickname() {
+    return new Promise(function (resolve) {
+      if (Engine.nickname) { resolve(); return; }
+      Story.runMessages([
+        { text: "SALASANAKANAVA AVATTU", type: "system" },
+        "Tervetuloa. Tama on etsivatoimiston suljettu tutkintakanava.",
+        "Ennen kuin aloitamme - millä nimimerkilla sinua kutsutaan?"
+      ]).then(function () {
+        inputMode = "nick";
+        inputbar.style.display = "flex";
+        mainInput.placeholder = "Nimimerkkisi...";
+        mainInput.focus();
+      });
+      Engine._nickResolve = resolve;
+    });
+  }
+
+  function handleInput() {
+    var v = mainInput.value.trim();
+    if (!v) return;
+    beep(function () { window.Audio.click(); });
+    if (inputMode === "nick") {
+      mainInput.value = "";
+      Story.player(v);
+      Engine.setNickname(v).then(function () {
+        inputbar.style.display = "none";
+        Story.handler("Kirjattu, " + Engine.nickname + ". Aloitetaan tutkinta.").then(function () {
+          if (Engine._nickResolve) Engine._nickResolve();
+        });
+      });
+    } else if (inputMode === "final") {
+      Story.player(v);
+      mainInput.value = "";
+      tryFinalCodeVal(v);
+    }
+  }
+
+  function tryFinalCodeVal(v) {
+    if (busy) return;
+    busy = true;
+    Engine.submitGuess("final", v).then(function (r) {
+      busy = false;
+      if (r.ok) {
+        inputbar.style.display = "none";
+        beep(function () { window.Audio.success(); });
+        Engine.markCompleted();
+        showEnding();
+      } else {
+        beep(function () { window.Audio.error(); });
+        Story.system("Vaara koodi. Tarkista koodinpalat.");
+        if (navigator.vibrate) navigator.vibrate(120);
+      }
+    });
+  }
+
+  mainSend.addEventListener("click", handleInput);
+  mainInput.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") handleInput();
+  });
+
+  // --- Todisteloki (case board) ---------------------------------------
+  var boardSheet = false;
+  function toggleBoard() {
+    if (boardSheet) { closeSheet(); boardSheet = false; return; }
+    boardSheet = true;
+    sheetBody.innerHTML = "";
+    sheetTitle.textContent = "TODISTELOKI";
+    veil.classList.add("open");
+    sheet.classList.add("open");
+    sheetOpen = true;
+
+    var solvedN = Engine.steps.filter(function (s) { return Engine.solved[s.id]; }).length;
+    var head = document.createElement("div");
+    head.className = "muted";
+    head.style.cssText = "font-family:var(--mono);font-size:.8rem;margin-bottom:1rem";
+    head.textContent = "Ratkaistu " + solvedN + " / " + Engine.steps.length +
+      "  ·  koodi tahan mennessa: " + (Engine.assembledCode() || "-");
+    sheetBody.appendChild(head);
+
+    Engine.steps.forEach(function (st, i) {
+      var row = document.createElement("div");
+      var ok = Engine.solved[st.id];
+      row.className = "board-item" + (ok ? "" : " locked");
+      var n = document.createElement("span");
+      n.textContent = (i + 1) + ". " + (st.title || st.id);
+      var cp = document.createElement("span");
+      cp.className = "cp";
+      cp.textContent = ok ? (Engine.codeParts[st.id] || "-") : "····";
+      row.appendChild(n); row.appendChild(cp);
+      sheetBody.appendChild(row);
+    });
+  }
+  $("btn-board").addEventListener("click", function () {
+    beep(function () { window.Audio.click(); });
+    toggleBoard();
+  });
+  veil.addEventListener("click", function () { boardSheet = false; });
+  $("sheet-close").addEventListener("click", function () { boardSheet = false; });
+
+  // --- Aanikytkin ------------------------------------------------------
+  var soundBtn = $("btn-sound");
+  function paintSound() { soundBtn.textContent = soundOn ? "ÄÄNI: ON" : "ÄÄNI: OFF"; }
+  soundBtn.addEventListener("click", function () {
+    soundOn = !soundOn;
+    paintSound();
+    if (soundOn) beep(function () { window.Audio.unlock(); window.Audio.click(); });
+  });
+  paintSound();
+
+  // --- Kaynnistys --------------------------------------------------------
+  document.body.addEventListener("pointerdown", function once() {
+    beep(function () { window.Audio.unlock(); });
+    document.body.removeEventListener("pointerdown", once);
+  }, { once: true });
+
+  Engine.init().then(function () {
+    $("conn-status").textContent = "ONLINE";
+    runBoot(function () {
+      askNickname().then(function () {
+        if (Engine.isComplete()) {
+          Story.system("Tervetuloa takaisin, " + Engine.nickname + ".");
+          showEnding();
+          return;
+        }
+        if (Object.keys(Engine.solved).length > 0) {
+          Story.system("Jatketaan tutkintaa, " + Engine.nickname + ".");
+        }
+        playNext();
+      });
+    });
+  }).catch(function (err) {
+    bootEl.innerHTML = '<div class="boot-inner"><div class="boot-logo">SALAPOLIISI</div>' +
+      '<div class="notice err">Yhteysvirhe: ' + (err && err.message ? err.message : err) +
+      '<br><br>Varmista etta Firebase-projekti on kaytossa ja Anonymous-auth on paalla.</div></div>';
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,253 @@
+/* Salapoliisi - base.css: design tokens, reset, yhteiset tyylit */
+
+:root {
+  --bg: #0a0e14;
+  --bg-2: #0e1420;
+  --surface: #141b28;
+  --surface-2: #1a2334;
+  --line: #26324a;
+  --text: #e9e7e0;
+  --text-dim: #9aa3b2;
+  --text-faint: #5f6a7d;
+  --accent: #e2b46a;        /* tyopoydalamppu-meripihka */
+  --accent-dim: #8a6c3e;
+  --ok: #6fd597;
+  --err: #e56b6b;
+  --sys: #5ec8d8;           /* jarjestelmaviestit */
+  --mono: "IBM Plex Mono", "Cascadia Mono", Consolas, ui-monospace, monospace;
+  --sans: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --radius: 14px;
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-t: env(safe-area-inset-top, 0px);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.5;
+  min-height: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button, input, textarea, select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+img, svg { display: block; max-width: 100%; }
+
+/* --- Yleiset komponentit ------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  min-height: 46px;
+  padding: .7rem 1.3rem;
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  color: var(--text);
+  font-weight: 600;
+  letter-spacing: .02em;
+  transition: transform .12s ease, background .15s ease, border-color .15s;
+  user-select: none;
+}
+
+.btn:active { transform: scale(.97); }
+
+.btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #14100a;
+}
+
+.btn.primary:active { background: #d1a257; }
+
+.btn.ghost {
+  background: transparent;
+  border-color: var(--line);
+  color: var(--text-dim);
+}
+
+.btn.danger {
+  background: transparent;
+  border-color: var(--err);
+  color: var(--err);
+}
+
+.btn:disabled {
+  opacity: .45;
+  pointer-events: none;
+}
+
+.input {
+  width: 100%;
+  min-height: 46px;
+  padding: .7rem 1rem;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--text);
+  outline: none;
+}
+
+.input:focus { border-color: var(--accent); }
+
+.mono { font-family: var(--mono); }
+
+.muted { color: var(--text-dim); }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1rem;
+}
+
+/* --- Admin/sessions -sivujen layout --------------------------- */
+
+.page {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: calc(1.2rem + var(--safe-t)) 1rem calc(2rem + var(--safe-b));
+}
+
+.page h1 {
+  font-family: var(--mono);
+  font-size: 1.3rem;
+  letter-spacing: .06em;
+  color: var(--accent);
+  margin-bottom: .4rem;
+}
+
+.page h2 {
+  font-size: 1rem;
+  margin: 1.4rem 0 .6rem;
+  color: var(--text);
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .8rem;
+  padding-bottom: .8rem;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 1.2rem;
+  flex-wrap: wrap;
+}
+
+.topbar nav { display: flex; gap: .6rem; flex-wrap: wrap; }
+
+.topbar a {
+  color: var(--sys);
+  text-decoration: none;
+  font-family: var(--mono);
+  font-size: .85rem;
+}
+
+.row { display: flex; gap: .6rem; flex-wrap: wrap; align-items: center; }
+
+.grow { flex: 1; }
+
+table.data {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .85rem;
+}
+
+table.data th, table.data td {
+  text-align: left;
+  padding: .5rem .6rem;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+table.data th {
+  font-family: var(--mono);
+  font-size: .72rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.badge {
+  display: inline-block;
+  padding: .1rem .55rem;
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: .72rem;
+  border: 1px solid var(--line);
+  color: var(--text-dim);
+}
+
+.badge.ok { color: var(--ok); border-color: var(--ok); }
+.badge.err { color: var(--err); border-color: var(--err); }
+
+.notice {
+  padding: .7rem 1rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text-dim);
+  font-size: .9rem;
+}
+
+.notice.err { border-color: var(--err); color: var(--err); }
+.notice.ok { border-color: var(--ok); color: var(--ok); }
+
+.field { margin-bottom: .8rem; }
+
+.field label {
+  display: block;
+  font-family: var(--mono);
+  font-size: .72rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: .3rem;
+}
+
+textarea.input {
+  min-height: 90px;
+  resize: vertical;
+  font-family: var(--mono);
+  font-size: .85rem;
+}
+
+/* Login-kortti */
+.login-wrap {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 380px;
+}
+
+.login-card h1 { margin-bottom: 1rem; }
+
+@media (min-width: 720px) {
+  .login-card { max-width: 420px; }
+}

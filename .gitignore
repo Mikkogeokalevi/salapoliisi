@@ -1,0 +1,16 @@
+# Salaisuudet ja paikallinen data — EI versionhallintaan
+data/seed.json
+data/*-local.json
+config.local.js
+.env
+.env.*
+
+# Sisäinen dokumentaatio (vanha projekti) — ei public-repoon
+PROJECT_CONTEXT.md
+
+# Muut
+node_modules/
+.DS_Store
+*.log
+Thumbs.db
+desktop.ini

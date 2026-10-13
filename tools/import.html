@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Salapoliisi — Datantuonti</title>
+<link rel="stylesheet" href="../css/base.css">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="page">
+  <div class="topbar">
+    <h1>SEED-IMPORT → FIRESTORE</h1>
+  </div>
+
+  <div class="card">
+    <h2>1. Kirjaudu adminilla</h2>
+    <div class="field"><label>Sahkoposti</label><input class="input" id="l-email" type="email"></div>
+    <div class="field"><label>Salasana</label><input class="input" id="l-pass" type="password"></div>
+    <button class="btn" id="btn-login">Kirjaudu</button>
+    <span id="auth-status" class="muted" style="margin-left:.8rem"></span>
+  </div>
+
+  <div class="card" style="margin-top:1rem">
+    <h2>2. Valitse seed.json</h2>
+    <input type="file" id="file" accept=".json">
+    <p class="muted" style="font-size:.8rem;margin-top:.5rem">
+      Muoto: <code>{config:{...}, steps:[{id,...}], solutions:{id:{answers:[...]}}, rewards:{id:{codePart,revealText}}}</code><br>
+      Vastaukset normalisoidaan automaattisesti (lowercase, trim).
+    </p>
+    <button class="btn primary" id="btn-run" disabled>Aja tuonti</button>
+  </div>
+
+  <pre id="log" class="card mono" style="margin-top:1rem;font-size:.78rem;white-space:pre-wrap;min-height:100px"></pre>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="../js/config.js"></script>
+<script src="../js/firebase-init.js"></script>
+<script>
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+  var authed = false;
+
+  function log(s) { $("log").textContent += s + "\n"; }
+  function db() { return window.fb.db; }
+  function norm(s) {
+    return String(s == null ? "" : s).trim().toLowerCase().replace(/\s+/g, " ");
+  }
+
+  $("btn-login").addEventListener("click", function () {
+    window.fb.signInAdmin($("l-email").value.trim(), $("l-pass").value)
+      .then(function (cr) {
+        if (!window.fb.isAdmin(cr.user)) {
+          $("auth-status").textContent = "Tili ei ole admin.";
+          window.fb.signOut();
+          return;
+        }
+        authed = true;
+        $("auth-status").textContent = "Kirjautunut: " + cr.user.email;
+        $("btn-run").disabled = false;
+      })
+      .catch(function (e) {
+        $("auth-status").textContent = "Virhe: " + e.message;
+      });
+  });
+
+  $("btn-run").addEventListener("click", function () {
+    if (!authed) return;
+    var f = $("file").files[0];
+    if (!f) { log("Valitse tiedosto ensin."); return; }
+    f.text().then(function (txt) {
+      var data = JSON.parse(txt);
+      log("Luetaan: " + f.name);
+      var jobs = [];
+      if (data.config) {
+        jobs.push(["config/game", data.config]);
+      }
+      (data.steps || []).forEach(function (s) {
+        var id = s.id;
+        var copy = JSON.parse(JSON.stringify(s));
+        delete copy.id;
+        jobs.push(["steps/" + id, copy]);
+      });
+      Object.keys(data.solutions || {}).forEach(function (id) {
+        var sol = data.solutions[id];
+        sol.answers = (sol.answers || []).map(norm).filter(Boolean);
+        jobs.push(["solutions/" + id, sol]);
+      });
+      Object.keys(data.rewards || {}).forEach(function (id) {
+        jobs.push(["rewards/" + id, data.rewards[id]]);
+      });
+
+      log("Kirjoitetaan " + jobs.length + " dokumenttia...");
+      var chain = Promise.resolve();
+      jobs.forEach(function (j) {
+        chain = chain.then(function () {
+          var parts = j[0].split("/");
+          return db().collection(parts[0]).doc(parts[1]).set(j[1])
+            .then(function () { log("  OK " + j[0]); })
+            .catch(function (e) { log("  VIRHE " + j[0] + ": " + e.message); });
+        });
+      });
+      chain.then(function () { log("Valmis."); });
+    }).catch(function (e) { log("JSON-virhe: " + e.message); });
+  });
+})();
+</script>
+</body>
+</html>

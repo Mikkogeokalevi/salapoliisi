@@ -1,0 +1,69 @@
+{
+  "_HUOM": "Esimerkki seed-datan rakenteesta. Todellinen data on seed.json:ssa (gitignored). solutions/rewards sisaltavat vastaukset - ALEKOSKAAN committaa oikeaa seed.jsonia versionhallintaan.",
+
+  "config": {
+    "initialPrompt": "Kirjoita nimimerkkisi",
+    "finalMessage": "Tapaus ratkaistu!"
+  },
+
+  "steps": [
+    {
+      "id": "step_01",
+      "order": 1,
+      "type": "text",
+      "title": "Vaiheen otsikko",
+      "promptShort": "Lyhyt kuvaus joka näkyy tehtäväkortissa.",
+      "prompt": "Pulman ohjeteksti. HTML sallittu (esim. <i>kursiivi</i>).",
+      "story": [
+        "Kertojan viesti 1 (typewriter).",
+        "Kertojan viesti 2."
+      ],
+      "params": {},
+      "hints": ["Vihje 1", "Vihje 2"]
+    },
+    {
+      "id": "step_02",
+      "order": 2,
+      "type": "mapClick",
+      "title": "Karttatehtävä esimerkki",
+      "promptShort": "Klikkaa oikea kohta kartalla.",
+      "prompt": "Ohjeteksti...",
+      "story": ["Viesti..."],
+      "params": {
+        "center": [61.0, 25.7],
+        "zoom": 14,
+        "snapDeg": 0.003
+      },
+      "hints": ["Vihje..."]
+    }
+  ],
+
+  "_tyypit": {
+    "text":     "{ placeholder?, buttonText? } - guess = teksti",
+    "cipher":   "{ cipherText, alphabet? } - guess = selvitetty sana",
+    "morse":    "{ message, wpm?, showCode? } - guess = kuultu sana",
+    "lock":     "{ digits } - guess = numerot jonotettuna",
+    "mapClick": "{ center:[lat,lng], zoom, snapDeg } - guess = 'lat_lng' ruutu",
+    "coords":   "{ decimals } - guess = 'lat,lng' pyoristettyna",
+    "wires":    "{ wires:[{id,label,color}], rules[], maxCuts } - guess = id:t '+'-erotin",
+    "sequence": "{ sequence:[0..], padCount?, speed? } - guess = sarjan allekirjoitus",
+    "order":    "{ items:[{id,label}] } - guess = id:t oikeassa jarjestyksessa '+'-erotin",
+    "grid":     "{ size, startOn:[], goal:'on'|'off' } - guess = bittijono"
+  },
+
+  "solutions": {
+    "step_01": { "answers": ["oikea_vastaus_normalisoituna"] },
+    "final": { "answers": ["koko_koodi_tahan"] }
+  },
+
+  "rewards": {
+    "step_01": {
+      "codePart": "K",
+      "revealText": "Viesti joka näytetään oikeasta vastauksesta."
+    },
+    "final": {
+      "codePart": "",
+      "revealText": "Loppuviesti - ohje geocache-checkeriin."
+    }
+  }
+}

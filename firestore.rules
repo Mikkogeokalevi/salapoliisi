@@ -1,0 +1,93 @@
+rules_version = '2';
+// ================================================================
+// Salapoliisi - Firestore Security Rules
+//
+// AJA TAMA: Firebase Console > Firestore Database > Rules > liita tama > Publish
+// TAI: firebase deploy --only firestore:rules
+//
+// VAIHDA "toni@kauppinen.info" alla omaan admin-sahkopostiisi
+// (sama kuin js/config.js ADMIN_EMAIL).
+//
+// ARKKITEHTUURI (anti-cheat):
+//  - solutions/: ratkaisut eivat KOSKAAN luettavissa pelaajille
+//  - solved/:    pelaaja kirjoittaa arvauksensa; saanto vertaa sita
+//               solutions-dokumenttiin palvelimella. Vaara arvaus =
+//               permission-denied.
+//  - rewards/:   koodinpala luettavissa vain jos solved-dokumentti
+//               on jo olemassa kyseiselle uid:lle
+// ================================================================
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email == "toni@kauppinen.info";
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Pelin julkinen konfiguraatio (ei sisalla vastauksia!)
+    match /config/{doc} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // Vaiheiden maaritelmat (pulman sisalto, EI vastauksia)
+    match /steps/{doc} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // Ratkaisut: vain admin. Pelaaja ei voi lukea NAITA KOSKAAN.
+    match /solutions/{doc} {
+      allow get, list, write: if isAdmin();
+    }
+
+    // Palkinnot (koodinpalat): luettavissa vain ratkaisseille.
+    match /rewards/{stepId} {
+      allow get: if isAdmin()
+        || (isSignedIn() && exists(
+          /databases/$(database)/documents/solved/$(request.auth.uid + '_' + stepId)));
+      allow list: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // Ratkaisutodisteet. create sallitaan vain jos arvaus tasmaa
+    // solutions-dokumentin answers-listan kanssa -> palvelinpuolen tarkistus.
+    match /solved/{docId} {
+      allow get: if isAdmin()
+        || (isSignedIn() && resource.data.uid == request.auth.uid);
+      allow list: if isAdmin();
+      allow create: if isSignedIn()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.step is string
+        && request.resource.data.guess is string
+        && get(/databases/$(database)/documents
+            /solutions/$(request.resource.data.step))
+            .data.answers.hasAny([request.resource.data.guess]);
+      allow update, delete: if isAdmin();
+    }
+
+    // Pelisessiot: pelaaja lukee/kirjoittaa omaa dokumenttiaan (doc id = uid).
+    match /sessions/{uid} {
+      allow get: if isAdmin() || (isSignedIn() && request.auth.uid == uid);
+      allow list: if isAdmin();
+      allow create, update: if isSignedIn() && request.auth.uid == uid;
+      allow delete: if isAdmin();
+
+      match /wrongAnswers/{doc} {
+        allow create: if isSignedIn() && request.auth.uid == uid;
+        allow get: if isAdmin() || (isSignedIn() && request.auth.uid == uid);
+        allow list: if isAdmin();
+        allow delete: if isAdmin();
+      }
+    }
+
+    // Kaikki muu kielletty
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
