@@ -209,5 +209,23 @@
     }, { merge: true }).catch(function () {});
   };
 
+  // Aloita alusta: poistaa omat solved-dokumentit, session ja nimimerkin.
+  Engine.resetProgress = function () {
+    var uid = Engine.user.uid;
+    var dels = Engine.steps.map(function (st) {
+      return db().collection("solved").doc(uid + "_" + st.id).delete()
+        .catch(function () {});
+    });
+    dels.push(db().collection("solved").doc(uid + "_final").delete()
+      .catch(function () {}));
+    return Promise.all(dels).then(function () {
+      return db().collection("sessions").doc(uid).delete()
+        .catch(function () {});
+    }).then(function () {
+      try { localStorage.removeItem("sp_nick"); } catch (e) {}
+      location.reload();
+    });
+  };
+
   window.Engine = Engine;
 })();

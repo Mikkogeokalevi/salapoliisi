@@ -67,7 +67,10 @@ service cloud.firestore {
         && get(/databases/$(database)/documents
             /solutions/$(request.resource.data.step))
             .data.answers.hasAny([request.resource.data.guess]);
-      allow update, delete: if isAdmin();
+      // Pelaaja voi poistaa OMAT ratkaisunsa ("aloita alusta")
+      allow update: if isAdmin();
+      allow delete: if isAdmin()
+        || (isSignedIn() && resource.data.uid == request.auth.uid);
     }
 
     // Pelisessiot: pelaaja lukee/kirjoittaa omaa dokumenttiaan (doc id = uid).
@@ -75,7 +78,7 @@ service cloud.firestore {
       allow get: if isAdmin() || (isSignedIn() && request.auth.uid == uid);
       allow list: if isAdmin();
       allow create, update: if isSignedIn() && request.auth.uid == uid;
-      allow delete: if isAdmin();
+      allow delete: if isAdmin() || (isSignedIn() && request.auth.uid == uid);
 
       match /wrongAnswers/{doc} {
         allow create: if isSignedIn() && request.auth.uid == uid;

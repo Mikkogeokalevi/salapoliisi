@@ -331,6 +331,18 @@
       row.appendChild(n); row.appendChild(cp);
       sheetBody.appendChild(row);
     });
+
+    // Aloita alusta -nappi
+    var reset = document.createElement("button");
+    reset.className = "btn ghost";
+    reset.style.cssText = "width:100%;margin-top:1.2rem;border-color:var(--err);color:var(--err)";
+    reset.textContent = "ALOITA ALUSTA (menettää edistymisen)";
+    reset.addEventListener("click", function () {
+      if (confirm("Poistetaan koko edistymisesi ja aloitetaan peli alusta. Oletko varma?")) {
+        Engine.resetProgress();
+      }
+    });
+    sheetBody.appendChild(reset);
   }
   $("btn-board").addEventListener("click", function () {
     beep(function () { window.Audio.click(); });
