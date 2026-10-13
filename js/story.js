@@ -53,7 +53,7 @@
   // Handlerin viesti typewriter-efektilla. Palauttaa Promise.
   Story.handler = function (text, opts) {
     opts = opts || {};
-    var who = opts.who || "MIKKO";
+    var who = opts.who || "MIKKOKALEVI";
     var delay = opts.delay == null ? 650 : opts.delay;
     var speed = opts.speed == null ? 14 : opts.speed;
 
