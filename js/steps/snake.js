@@ -65,6 +65,9 @@ window.Steps["snake"] = function (container, step, api) {
     var map = { left: { x: -1, y: 0 }, right: { x: 1, y: 0 }, up: { x: 0, y: -1 }, down: { x: 0, y: 1 } };
     var nd = map[d];
     if (!nd) return;
+    if (!alive) {
+      reset(); // kuoleman jalkeen: uusi yritys heti
+    }
     if (nd.x === -dir.x && nd.y === -dir.y) return;
     nextDir = nd;
     if (!started) {
