@@ -12,9 +12,15 @@
   };
 
   function scrollDown() {
-    if (!Story.scrollEl) return;
     requestAnimationFrame(function () {
-      Story.scrollEl.scrollTop = Story.scrollEl.scrollHeight;
+      var el = Story.scrollEl;
+      if (!el) return;
+      // scrollIntoView vierittaa oikean kontekstin (sisainen tai sivu)
+      if (el.lastElementChild) {
+        el.lastElementChild.scrollIntoView({ block: "end", behavior: "smooth" });
+      }
+      el.scrollTop = el.scrollHeight;
+      window.scrollTo(0, document.documentElement.scrollHeight);
     });
   }
 
