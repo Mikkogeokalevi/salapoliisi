@@ -11,7 +11,7 @@ window.Steps["mastermind"] = function (container, step, api) {
 
   U.prompt(container, step.prompt);
   var g = U.game();
-  var status = U.statusLine(container, "Murra koodi - " + MAX + " yritysta");
+  var status = U.statusLine(container, "Murra koodi - " + MAX + " yritystä");
 
   var len = CODE.length;
   var attempts = 0;
@@ -96,7 +96,7 @@ window.Steps["mastermind"] = function (container, step, api) {
   btn.textContent = "Tarkista koodi";
   btn.addEventListener("click", function () {
     if (cur.indexOf(-1) !== -1) {
-      fb.show("Tayta kaikki paikat ensin.", true);
+      fb.show("Täytä kaikki paikat ensin.", true);
       return;
     }
     attempts++;
@@ -117,7 +117,7 @@ window.Steps["mastermind"] = function (container, step, api) {
     if (window.Audio) window.Audio.click();
 
     if (r.black === len) {
-      status.set("Koodi murrettu: " + attempts + " yrityksella");
+      status.set("Koodi murrettu: " + attempts + " yrityksellä");
       if (window.Audio) window.Audio.success();
       submit(guess);
       return;
@@ -130,7 +130,7 @@ window.Steps["mastermind"] = function (container, step, api) {
       slots.forEach(function (s) { s.textContent = "·"; });
       return;
     }
-    status.set("Yrityksia jaljella: " + (MAX - attempts));
+    status.set("Yrityksiä jäljellä: " + (MAX - attempts));
     cur = cur.map(function () { return -1; });
     slots.forEach(function (s) { s.textContent = "·"; });
   });

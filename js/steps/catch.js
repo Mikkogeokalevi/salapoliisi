@@ -13,7 +13,7 @@ window.Steps["catch"] = function (container, step, api) {
 
   U.prompt(container, step.prompt);
   var g = U.game();
-  var status = U.statusLine(container, "Kerää " + GOAL + " esinetta - raahaa alustaa");
+  var status = U.statusLine(container, "Kerää " + GOAL + " esinettä - raahaa alustaa");
 
   var W = Math.min(360, Math.floor(window.innerWidth * 0.88));
   var H = Math.floor(W * 1.05);
@@ -28,7 +28,7 @@ window.Steps["catch"] = function (container, step, api) {
     got = 0; miss = 0;
     done = false;
     started = false;
-    status.set("Kerää " + GOAL + " esinetta - raahaa alustaa");
+    status.set("Kerää " + GOAL + " esinettä - raahaa alustaa");
   }
 
   function spawn() {

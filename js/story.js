@@ -141,7 +141,7 @@
     var btn = document.createElement("button");
     btn.className = "btn primary";
     btn.style.width = "100%";
-    btn.textContent = "Avaa tehtava";
+    btn.textContent = "Avaa tehtävä";
     btn.addEventListener("click", function () { onOpen(step); });
     card.appendChild(btn);
     Story.el.appendChild(card);

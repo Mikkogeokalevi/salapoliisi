@@ -82,7 +82,7 @@ window.Steps["breakout"] = function (container, step, api) {
           ball.vy = ball.vy / cur * sp;
         }
         if (window.Audio) window.Audio.click();
-        status.set("Tiilia jaljella: " + remaining);
+        status.set("Tiiliä jäljellä: " + remaining);
         if (remaining <= 0) {
           running = false;
           status.set("Muuri murtui!");
@@ -97,10 +97,10 @@ window.Steps["breakout"] = function (container, step, api) {
       if (navigator.vibrate) navigator.vibrate(80);
       if (window.Audio) window.Audio.error();
       if (lives <= 0) {
-        status.set("Elamat loppu - aloitetaan alusta");
+        status.set("Elämät loppu - aloitetaan alusta");
         reset(false);
       } else {
-        status.set("Pallo meni! Elamia: " + lives);
+        status.set("Pallo meni! Elämiä: " + lives);
         reset(true);
       }
     }

@@ -10,7 +10,7 @@ window.Steps["memory"] = function (container, step, api) {
 
   U.prompt(container, step.prompt);
   var g = U.game();
-  var status = U.statusLine(container, "Loyda kaikki parit");
+  var status = U.statusLine(container, "Löydä kaikki parit");
 
   var board = document.createElement("div");
   board.style.cssText =
@@ -45,7 +45,7 @@ window.Steps["memory"] = function (container, step, api) {
         open = [];
         lock = false;
         if (matched >= PAIRS) {
-          status.set("Kaikki parit loytyivat!");
+          status.set("Kaikki parit löytyivät!");
           if (window.Audio) window.Audio.success();
           submit("parit" + PAIRS);
         }

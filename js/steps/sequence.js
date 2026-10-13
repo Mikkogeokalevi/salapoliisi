@@ -1,6 +1,6 @@
-// Pulmatyyppi: sequence - muistisarja (Simon): toista sarja
-// params: { sequence: [0..3], padCount?: 4, speed?: 550 }
-// Onnistuminen lahettaa sarjan allekirjoituksen vastauksena.
+// Pulmatyyppi: sequence - muistisarja (Simon): toista sarja.
+// params: { sequence: [0..3], padCount?: 4, speed?: 550, startLen?: 2 }
+// Jos startLen < seq.length, sarja kasvaa askeleittain (progressiivinen).
 window.Steps["sequence"] = function (container, step, api) {
   "use strict";
   var U = window.StepsUI;
@@ -8,8 +8,11 @@ window.Steps["sequence"] = function (container, step, api) {
   var seq = params.sequence || [0, 1, 2, 3];
   var padCount = params.padCount || 4;
   var speed = params.speed || 550;
+  var startLen = Math.min(params.startLen || seq.length, seq.length);
+  var round = startLen;
 
   U.prompt(container, step.prompt);
+  var g2 = U.game();
 
   var status = document.createElement("div");
   status.className = "muted";
@@ -53,9 +56,10 @@ window.Steps["sequence"] = function (container, step, api) {
     playing = true;
     accepting = false;
     inputIdx = 0;
-    status.textContent = "Kuuntele...";
+    var active = seq.slice(0, round);
+    status.textContent = "Kuuntele... " + active.length + " / " + seq.length;
     var t = 400;
-    seq.forEach(function (p) {
+    active.forEach(function (p) {
       setTimeout(function () {
         flash(p, speed * .6);
         padTone(p);
@@ -65,7 +69,7 @@ window.Steps["sequence"] = function (container, step, api) {
     setTimeout(function () {
       playing = false;
       accepting = true;
-      status.textContent = "Toista sarja koskettamalla (" + seq.length + " askelta)";
+      status.textContent = "Toista " + active.length + " askelta koskettamalla";
     }, t);
   }
 
@@ -80,17 +84,24 @@ window.Steps["sequence"] = function (container, step, api) {
         padTone(idx);
         if (idx === seq[inputIdx]) {
           inputIdx++;
-          if (inputIdx >= seq.length) {
+          if (inputIdx >= round) {
             accepting = false;
-            status.textContent = "Sarja oikein!";
-            submit(seq.join(""));
+            if (round >= seq.length) {
+              status.textContent = "Sarja oikein!";
+              submit(seq.join(""));
+            } else {
+              round++;
+              status.textContent = "Oikein! Seuraavaksi " + round + " askelta...";
+              setTimeout(function () { if (g2.alive()) playSeq(); }, 1100);
+            }
           }
         } else {
           accepting = false;
-          status.textContent = "Vaara - yrita uudelleen";
+          status.textContent = "Väärä - kuuntele uudelleen";
           var fb = fbRef;
-          if (fb) fb.show("Vaara sarja. Kuuntele uudelleen.", true);
+          if (fb) fb.show("Väärä sarja. Kuunnellaan uudelleen.", true);
           if (navigator.vibrate) navigator.vibrate(120);
+          setTimeout(function () { if (g2.alive()) playSeq(); }, 1200);
         }
       });
       pads.appendChild(p);
@@ -107,4 +118,5 @@ window.Steps["sequence"] = function (container, step, api) {
     playSeq();
   }, false);
   U.hint(container, api);
+  return g2.cleanup;
 };

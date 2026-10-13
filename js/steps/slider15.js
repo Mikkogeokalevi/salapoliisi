@@ -10,7 +10,7 @@ window.Steps["slider15"] = function (container, step, api) {
 
   U.prompt(container, step.prompt);
   var g = U.game();
-  var status = U.statusLine(container, "Jarjesta palat 1-" + (N * N - 1));
+  var status = U.statusLine(container, "Järjestä palat 1-" + (N * N - 1));
 
   var board = document.createElement("div");
   board.style.cssText =

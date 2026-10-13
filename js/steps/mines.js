@@ -103,7 +103,7 @@ window.Steps["mines"] = function (container, step, api) {
     render();
     if (checkWin()) {
       won = true;
-      status.set("Kentta selvitetty!");
+      status.set("Kenttä selvitetty!");
       if (window.Audio) window.Audio.success();
       submit("selvitetty" + N + "x" + MINES);
     }

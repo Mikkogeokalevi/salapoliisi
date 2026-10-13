@@ -36,7 +36,7 @@
     inp.setAttribute("enterkeyhint", "done");
     var btn = document.createElement("button");
     btn.className = "btn primary";
-    btn.textContent = btnText || "Laheta";
+    btn.textContent = btnText || "Lähetä";
     function go() { onSubmit(inp.value); }
     btn.addEventListener("click", go);
     inp.addEventListener("keydown", function (e) {
@@ -89,7 +89,7 @@
     btn.addEventListener("click", function () {
       var h = api.hint();
       if (!h) {
-        btn.textContent = "Ei enempaa vihjeita";
+        btn.textContent = "Ei enempää vihjeitä";
         btn.disabled = true;
         return;
       }
@@ -100,7 +100,7 @@
         container.appendChild(box);
       }
       box.textContent = "Vihje " + n + ": " + h;
-      btn.textContent = "Vihje (" + n + " kaytetty)";
+      btn.textContent = "Vihje (" + n + " käytetty)";
     });
     container.appendChild(btn);
     return btn;
@@ -113,7 +113,7 @@
       return api.try(guess).then(function (r) {
         if (r.ok) return true;
         if (r.error) {
-          if (fb) fb.show("Yhteysvirhe - yrita uudelleen.", true);
+          if (fb) fb.show("Yhteysvirhe - yritä uudelleen.", true);
           return false;
         }
         var el = container.querySelector(".sheet-body") || container;
@@ -123,7 +123,7 @@
         if (navigator.vibrate) navigator.vibrate(80);
         var n = api.wrong();
         if (fb) {
-          var m = "Vaara vastaus.";
+          var m = "Väärä vastaus.";
           if (n >= 2) m += " Vihje auttaisi?";
           fb.show(m, true);
         }

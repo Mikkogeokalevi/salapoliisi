@@ -118,9 +118,9 @@
 
   // --- Boot-sekvenssi ---------------------------------------------
   var BOOT_LINES = [
-    "> Yhdistetaan tutkintakanavaan...",
-    "> Salaus kaynnissa [AES-256]........ OK",
-    "> Vahvistetaan henkilollisyytta...... OK",
+    "> Yhdistetään tutkintakanavaan...",
+    "> Salaus käynnissä [AES-256]........ OK",
+    "> Vahvistetaan henkilöllisyyttä...... OK",
     "> Kanava auki. Tervetuloa, tutkija."
   ];
 
@@ -205,13 +205,13 @@
   function afterSolve(step, r) {
     Story.system("✓ TODISTE RATKAISTU").then(function () {
       return Story.reward(
-        r.reveal || "Hyva tyo. Tama vie meita eteenpain.",
+        r.reveal || "Hyvä työ. Tämä vie meitä eteenpäin.",
         r.codePart ? "KOODINPALA: " + r.codePart : null
       );
     }).then(function () {
       if (r.codePart) {
         return Story.handler(
-          "Sait koodinpalan \u201C" + r.codePart + "\u201D. Kirjaa se ylos - tarvitset kaikkia paloja loppukoodiin.",
+          "Sait koodinpalan \u201C" + r.codePart + "\u201D. Kirjaa se ylös - tarvitset kaikkia paloja loppukoodiin.",
           { speed: 12 }
         );
       }
@@ -240,8 +240,8 @@
       return;
     }
     Story.runMessages([
-      "Kaikki todisteet on ratkaistu. Erinomaista tyota.",
-      "Kokoa koodinpalat yhdeksi kokonaisuudeksi ja syota lopullinen koodi."
+      "Kaikki todisteet on ratkaistu. Erinomaista työtä.",
+      "Kokoa koodinpalat yhdeksi kokonaisuudeksi ja syötä lopullinen koodi."
     ]).then(function () {
       inputMode = "final";
       inputbar.style.display = "flex";
@@ -263,8 +263,8 @@
       if (Engine.nickname) { resolve(); return; }
       Story.runMessages([
         { text: "SALASANAKANAVA AVATTU", type: "system" },
-        "Tervetuloa. Tama on etsivatoimiston suljettu tutkintakanava.",
-        "Ennen kuin aloitamme - millä nimimerkilla sinua kutsutaan?"
+        "Tervetuloa. Tämä on etsivätoimiston suljettu tutkintakanava.",
+        "Ennen kuin aloitamme - millä nimimerkillä sinua kutsutaan?"
       ]).then(function () {
         inputMode = "nick";
         inputbar.style.display = "flex";
@@ -316,7 +316,7 @@
         showEnding();
       } else {
         beep(function () { window.Audio.error(); });
-        Story.system("Vaara koodi. Tarkista koodinpalat.");
+        Story.system("Väärä koodi. Tarkista koodinpalat.");
         if (navigator.vibrate) navigator.vibrate(120);
       }
     });
@@ -343,7 +343,7 @@
     head.className = "muted";
     head.style.cssText = "font-family:var(--mono);font-size:.8rem;margin-bottom:1rem";
     head.textContent = "Ratkaistu " + solvedN + " / " + Engine.steps.length +
-      "  ·  koodi tahan mennessa: " + (Engine.assembledCode() || "-");
+      "  ·  koodi tähän mennessä: " + (Engine.assembledCode() || "-");
     sheetBody.appendChild(head);
 
     Engine.steps.forEach(function (st, i) {
@@ -412,7 +412,7 @@
   }).catch(function (err) {
     bootEl.innerHTML = '<div class="boot-inner"><div class="boot-logo">SALAPOLIISI</div>' +
       '<div class="notice err">Yhteysvirhe: ' + (err && err.message ? err.message : err) +
-      '<br><br>Varmista etta Firebase-projekti on kaytossa ja Anonymous-auth on paalla.</div></div>';
+      '<br><br>Varmista että Firebase-projekti on käytössä ja Anonymous-auth on päällä.</div></div>';
   });
 })();
 </script>

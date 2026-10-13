@@ -10,7 +10,7 @@ window.Steps["maze"] = function (container, step, api) {
 
   U.prompt(container, step.prompt);
   var g = U.game();
-  var status = U.statusLine(container, "Etsi uloskaynti labyrintista");
+  var status = U.statusLine(container, "Etsi uloskäynti labyrintistä");
 
   var W = Math.min(360, Math.floor(window.innerWidth * 0.88));
   var cell = Math.floor(W / COLS);
