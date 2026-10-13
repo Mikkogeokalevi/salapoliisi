@@ -17,6 +17,13 @@ window.Steps["mastermind"] = function (container, step, api) {
   var attempts = 0;
   var cur = [];
 
+  // Pysyva selite palloista
+  var legend = document.createElement("div");
+  legend.className = "muted";
+  legend.style.cssText = "font-size:.75rem;text-align:center;margin:-.3rem 0 .6rem;line-height:1.5";
+  legend.innerHTML = "● = oikea symboli OIKEALLA paikalla<br>○ = oikea symboli VAARALLA paikalla";
+  container.appendChild(legend);
+
   // Historia
   var hist = document.createElement("div");
   hist.style.cssText = "margin-bottom:1rem";
@@ -123,7 +130,7 @@ window.Steps["mastermind"] = function (container, step, api) {
       slots.forEach(function (s) { s.textContent = "·"; });
       return;
     }
-    status.set("Yrityksia jaljella: " + (MAX - attempts) + " (●=oikea paikka, ○=oikea symboli)");
+    status.set("Yrityksia jaljella: " + (MAX - attempts));
     cur = cur.map(function () { return -1; });
     slots.forEach(function (s) { s.textContent = "·"; });
   });

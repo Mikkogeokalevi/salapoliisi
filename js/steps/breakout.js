@@ -27,10 +27,12 @@ window.Steps["breakout"] = function (container, step, api) {
       var bw = (W - 20 - (COLS - 1) * 5) / COLS;
       for (var r = 0; r < ROWS; r++) {
         for (var c = 0; c < COLS; c++) {
+          // ylin rivi on vahvistettua (2 osumaa)
           bricks.push({
             x: 10 + c * (bw + 5), y: 30 + r * 22,
             w: bw, h: 16, hit: false,
-            hue: ["#c0392b", "#2980b9", "#27ae60", "#f1c40f", "#9b59b6"][r % 5]
+            hp: r === 0 ? 2 : 1,
+            hue: ["#7d3c98", "#c0392b", "#2980b9", "#27ae60", "#f1c40f"][r % 5]
           });
         }
       }
@@ -68,9 +70,17 @@ window.Steps["breakout"] = function (container, step, api) {
       if (b.hit) return;
       if (ball.x + ball.r > b.x && ball.x - ball.r < b.x + b.w &&
           ball.y + ball.r > b.y && ball.y - ball.r < b.y + b.h) {
-        b.hit = true;
-        remaining--;
         ball.vy *= -1;
+        b.hp--;
+        if (b.hp <= 0) {
+          b.hit = true;
+          remaining--;
+          // pallo kiihtyy joka rikotulla tiilella
+          var sp = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy) * 1.025;
+          var cur = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
+          ball.vx = ball.vx / cur * sp;
+          ball.vy = ball.vy / cur * sp;
+        }
         if (window.Audio) window.Audio.click();
         status.set("Tiilia jaljella: " + remaining);
         if (remaining <= 0) {
@@ -104,6 +114,11 @@ window.Steps["breakout"] = function (container, step, api) {
       if (b.hit) return;
       ctx.fillStyle = b.hue;
       ctx.fillRect(b.x, b.y, b.w, b.h);
+      if (b.hp === 2) {
+        ctx.strokeStyle = "rgba(233,231,224,.7)";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(b.x + 2, b.y + 2, b.w - 4, b.h - 4);
+      }
     });
     ctx.fillStyle = "#e2b46a";
     ctx.fillRect(paddle.x, paddle.y, paddle.w, paddle.h);
