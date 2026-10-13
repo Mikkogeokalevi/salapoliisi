@@ -263,8 +263,8 @@
       if (Engine.nickname) { resolve(); return; }
       Story.runMessages([
         { text: "SALASANAKANAVA AVATTU", type: "system" },
-        "Tervetuloa. Tämä on etsivätoimiston suljettu tutkintakanava.",
-        "Ennen kuin aloitamme - millä nimimerkillä sinua kutsutaan?"
+        "Tervetuloa. Tämä on Mikkokalevin etsivätoimiston suljettu tutkintakanava.",
+        "Olen palkannut sinut erityiseen tehtävään - mutta ensin: millä nimimerkillä sinua kutsutaan?"
       ]).then(function () {
         inputMode = "nick";
         inputbar.style.display = "flex";

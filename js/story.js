@@ -164,6 +164,27 @@
     });
   };
 
+  // Portti: kysymys johon PITAA vastata hyvaksyttavasti tai ei paasta
+  // eteenpain (esim. salassapitosopimus). m = { gate, accept:[..],
+  // confirm, deny } - vaara vastaus -> deny-viesti ja kysymys uudestaan.
+  Story.gate = function (m) {
+    return Story.handler(m.gate).then(function () {
+      return Story.waitForInput();
+    }).then(function (answer) {
+      return Story.player(answer).then(function () { return answer; });
+    }).then(function (answer) {
+      var acc = m.accept || ["kyllä"];
+      var ok = acc.some(function (a) {
+        return answer.toLowerCase().indexOf(String(a).toLowerCase()) !== -1;
+      });
+      if (ok) {
+        return Story.handler(m.confirm || "Kirjattu.", { delay: 900 });
+      }
+      return Story.handler(m.deny || "Ilman hyväksyntää emme voi jatkaa. Yritä uudelleen.",
+        { delay: 1000 }).then(function () { return Story.gate(m); });
+    });
+  };
+
   // index.html toteuttaa: palauttaa Promise joka ratkeaa pelaajan tekstiin
   Story.waitForInput = function () {
     return Story._inputFn ? Story._inputFn() : Promise.resolve("...");
@@ -176,6 +197,7 @@
       p = p.then(function () {
         if (typeof m === "string") return Story.handler(m);
         if (m && m.type === "system") return Story.system(m.text);
+        if (m && m.gate) return Story.gate(m);
         if (m && m.ask) return Story.ask(m);
         return Story.handler(m.text || "", m || {});
       });
