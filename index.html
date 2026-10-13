@@ -74,6 +74,12 @@
 <script src="js/steps/order.js"></script>
 <script src="js/steps/grid.js"></script>
 <script src="js/steps/mapClick.js"></script>
+<script src="js/steps/snake.js"></script>
+<script src="js/steps/breakout.js"></script>
+<script src="js/steps/runner.js"></script>
+<script src="js/steps/memory.js"></script>
+<script src="js/steps/slider15.js"></script>
+<script src="js/steps/mastermind.js"></script>
 
 <script>
 (function () {
@@ -125,6 +131,7 @@
 
   // --- Sheet (pulma-overlay) ---------------------------------------
   var sheetOpen = false;
+  var activeCleanup = null; // pelin rAF/interval-siivous
   function openSheet(step) {
     if (sheetOpen) return;
     sheetOpen = true;
@@ -138,6 +145,10 @@
     sheetOpen = false;
     veil.classList.remove("open");
     sheet.classList.remove("open");
+    if (typeof activeCleanup === "function") {
+      try { activeCleanup(); } catch (e) {}
+      activeCleanup = null;
+    }
   }
   veil.addEventListener("click", closeSheet);
   $("sheet-close").addEventListener("click", closeSheet);
@@ -164,7 +175,8 @@
     };
     var fn = window.Steps[step.type];
     if (fn) {
-      fn(sheetBody, step, api);
+      var c = fn(sheetBody, step, api);
+      if (typeof c === "function") activeCleanup = c;
     } else {
       sheetBody.innerHTML = '<div class="notice err">Tuntematon pulmatyyppi: ' +
         String(step.type) + "</div>";

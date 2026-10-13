@@ -1,69 +1,146 @@
 {
-  "_HUOM": "Esimerkki seed-datan rakenteesta. Todellinen data on seed.json:ssa (gitignored). solutions/rewards sisaltavat vastaukset - ALEKOSKAAN committaa oikeaa seed.jsonia versionhallintaan.",
-
+  "_huom": "ESIMERKKI - kopioi data/seed.json:ksi ja tayteta todelliset vastaukset. seed.json on gitignored.",
   "config": {
     "initialPrompt": "Kirjoita nimimerkkisi",
     "finalMessage": "Tapaus ratkaistu!"
   },
-
   "steps": [
     {
       "id": "step_01",
       "order": 1,
       "type": "text",
-      "title": "Vaiheen otsikko",
-      "promptShort": "Lyhyt kuvaus joka näkyy tehtäväkortissa.",
-      "prompt": "Pulman ohjeteksti. HTML sallittu (esim. <i>kursiivi</i>).",
-      "story": [
-        "Kertojan viesti 1 (typewriter).",
-        "Kertojan viesti 2."
-      ],
-      "params": {},
+      "title": "Pääsykoodi",
+      "promptShort": "Kirjaudu ohjelmiin.",
+      "prompt": "Esimerkki-arvoitus. Kirjoita salasana.",
+      "story": ["Tarinaviesti 1", "Tarinaviesti 2"],
+      "params": { "placeholder": "Sukunimi..." },
       "hints": ["Vihje 1", "Vihje 2"]
     },
     {
       "id": "step_02",
       "order": 2,
+      "type": "memory",
+      "title": "Todistekortit",
+      "promptShort": "Loyda kuusi paria.",
+      "prompt": "Kaanna korttiparit.",
+      "story": [],
+      "params": { "pairs": 6 },
+      "hints": ["Muista sijainnit."]
+    },
+    {
+      "id": "step_03",
+      "order": 3,
+      "type": "snake",
+      "title": "Signaalinseuranta",
+      "promptShort": "Kerää 12 merkkiä.",
+      "prompt": "Matopeli.",
+      "story": [],
+      "params": { "apples": 12, "grid": 17, "speed": 160 },
+      "hints": []
+    },
+    {
+      "id": "step_04",
+      "order": 4,
+      "type": "morse",
+      "title": "Salainen lähete",
+      "promptShort": "Kuuntele morse.",
+      "prompt": "Kirjoita kuultu sana.",
+      "story": [],
+      "params": { "message": "ESIMERKKI", "wpm": 10, "showCode": true },
+      "hints": []
+    },
+    {
+      "id": "step_05",
+      "order": 5,
+      "type": "breakout",
+      "title": "Muurinmurtaja",
+      "promptShort": "Riko tiilet.",
+      "prompt": "Breakout-peli.",
+      "story": [],
+      "params": { "rows": 4, "cols": 7, "lives": 3 },
+      "hints": []
+    },
+    {
+      "id": "step_06",
+      "order": 6,
+      "type": "mastermind",
+      "title": "PIN-koodi",
+      "promptShort": "Murra symbolikoodi.",
+      "prompt": "Mastermind.",
+      "story": [],
+      "params": { "code": "0123", "symbols": ["🟥", "🟦", "🟩", "🟨", "🟪", "⬛"], "attempts": 10 },
+      "hints": []
+    },
+    {
+      "id": "step_07",
+      "order": 7,
       "type": "mapClick",
-      "title": "Karttatehtävä esimerkki",
-      "promptShort": "Klikkaa oikea kohta kartalla.",
-      "prompt": "Ohjeteksti...",
-      "story": ["Viesti..."],
-      "params": {
-        "center": [61.0, 25.7],
-        "zoom": 14,
-        "snapDeg": 0.003
-      },
-      "hints": ["Vihje..."]
+      "title": "Kätkö kartalla",
+      "promptShort": "Merkitse piste.",
+      "prompt": "Klikkaa karttaa.",
+      "story": [],
+      "params": { "center": [60.983, 25.661], "zoom": 15, "snapDeg": 0.003 },
+      "hints": []
+    },
+    {
+      "id": "step_08",
+      "order": 8,
+      "type": "runner",
+      "title": "Pakosimu",
+      "promptShort": "Selviydy 30 s.",
+      "prompt": "Runner-peli.",
+      "story": [],
+      "params": { "duration": 30 },
+      "hints": []
+    },
+    {
+      "id": "step_09",
+      "order": 9,
+      "type": "order",
+      "title": "Aikajana",
+      "promptShort": "Järjestä tapahtumat.",
+      "prompt": "Vedä/napit.",
+      "story": [],
+      "params": { "items": [{ "id": "a", "label": "A" }, { "id": "b", "label": "B" }] },
+      "hints": []
+    },
+    {
+      "id": "step_10",
+      "order": 10,
+      "type": "slider15",
+      "title": "Sirpalekuva",
+      "promptShort": "4x4 palapeli.",
+      "prompt": "Jarjesta 1-15.",
+      "story": [],
+      "params": { "size": 4, "shuffle": 80 },
+      "hints": []
     }
   ],
-
-  "_tyypit": {
-    "text":     "{ placeholder?, buttonText? } - guess = teksti",
-    "cipher":   "{ cipherText, alphabet? } - guess = selvitetty sana",
-    "morse":    "{ message, wpm?, showCode? } - guess = kuultu sana",
-    "lock":     "{ digits } - guess = numerot jonotettuna",
-    "mapClick": "{ center:[lat,lng], zoom, snapDeg } - guess = 'lat_lng' ruutu",
-    "coords":   "{ decimals } - guess = 'lat,lng' pyoristettyna",
-    "wires":    "{ wires:[{id,label,color}], rules[], maxCuts } - guess = id:t '+'-erotin",
-    "sequence": "{ sequence:[0..], padCount?, speed? } - guess = sarjan allekirjoitus",
-    "order":    "{ items:[{id,label}] } - guess = id:t oikeassa jarjestyksessa '+'-erotin",
-    "grid":     "{ size, startOn:[], goal:'on'|'off' } - guess = bittijono"
-  },
-
   "solutions": {
-    "step_01": { "answers": ["oikea_vastaus_normalisoituna"] },
-    "final": { "answers": ["koko_koodi_tahan"] }
+    "_huom": "Todelliset vastaukset tahan. Esimerkit alla.",
+    "step_01": { "answers": ["salasana"] },
+    "step_02": { "answers": ["parit6"] },
+    "step_03": { "answers": ["omena12"] },
+    "step_04": { "answers": ["esimerkki"] },
+    "step_05": { "answers": ["seinamurtunut"] },
+    "step_06": { "answers": ["0123"] },
+    "step_07": { "answers": ["cell_kaava: round(lat/0.003)_round(lng/0.003)"] },
+    "step_08": { "answers": ["pako30"] },
+    "step_09": { "answers": ["a+b"] },
+    "step_10": { "answers": ["kuvakoottu"] },
+    "final": { "answers": ["LOPPUKOODI"] }
   },
-
   "rewards": {
-    "step_01": {
-      "codePart": "K",
-      "revealText": "Viesti joka näytetään oikeasta vastauksesta."
-    },
-    "final": {
-      "codePart": "",
-      "revealText": "Loppuviesti - ohje geocache-checkeriin."
-    }
+    "step_01": { "codePart": "X", "revealText": "Teksti..." },
+    "step_02": { "codePart": "X", "revealText": "Teksti..." },
+    "step_03": { "codePart": "X", "revealText": "Teksti..." },
+    "step_04": { "codePart": "X", "revealText": "Teksti..." },
+    "step_05": { "codePart": "X", "revealText": "Teksti..." },
+    "step_06": { "codePart": "X", "revealText": "Teksti..." },
+    "step_07": { "codePart": "X", "revealText": "Teksti..." },
+    "step_08": { "codePart": "X", "revealText": "Teksti..." },
+    "step_09": { "codePart": "X", "revealText": "Teksti..." },
+    "step_10": { "codePart": "X", "revealText": "Teksti..." },
+    "final": { "codePart": "", "revealText": "Lopputeksti" }
   }
 }

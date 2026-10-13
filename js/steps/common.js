@@ -132,5 +132,94 @@
     };
   };
 
+  // --- Peliapurit --------------------------------------------------
+  //
+  // U.game() -> konteksti jolla timerit/raf-kuuntelijat siivotaan
+  // automaattisesti kun sheet suljetaan:
+  //   var g = U.game(); g.every(ms, fn); g.on(el, ev, fn);
+  //   palauta render() funktiosta g.cleanup
+  U.game = function () {
+    var timers = [], rafs = [], listeners = [];
+    var dead = false;
+    return {
+      every: function (ms, fn) { timers.push(setInterval(fn, ms)); },
+      timeout: function (ms, fn) { timers.push(setTimeout(fn, ms)); },
+      raf: function (fn) { if (!dead) rafs.push(requestAnimationFrame(fn)); },
+      on: function (el, ev, fn) { el.addEventListener(ev, fn); listeners.push([el, ev, fn]); },
+      alive: function () { return !dead; },
+      cleanup: function () {
+        dead = true;
+        timers.forEach(function (t) { clearTimeout(t); clearInterval(t); });
+        rafs.forEach(cancelAnimationFrame);
+        listeners.forEach(function (l) { l[0].removeEventListener(l[1], l[2]); });
+      }
+    };
+  };
+
+  // Canvas-naytto
+  U.canvas = function (container, w, h) {
+    var c = document.createElement("canvas");
+    c.width = w; c.height = h;
+    c.style.cssText =
+      "width:100%;max-width:" + w + "px;display:block;margin:0 auto;" +
+      "border:1px solid var(--line);border-radius:12px;background:#0c1119;" +
+      "touch-action:none";
+    container.appendChild(c);
+    return { el: c, ctx: c.getContext("2d") };
+  };
+
+  // Swipe-havaitsija (touch + hiiri): cb("left|right|up|down")
+  U.swipe = function (el, cb) {
+    var sx = 0, sy = 0, tracking = false;
+    function down(x, y) { sx = x; sy = y; tracking = true; }
+    function move(x, y) {
+      if (!tracking) return;
+      var dx = x - sx, dy = y - sy;
+      if (Math.abs(dx) < 26 && Math.abs(dy) < 26) return;
+      tracking = false;
+      cb(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? "right" : "left") : (dy > 0 ? "down" : "up"));
+    }
+    el.addEventListener("touchstart", function (e) { down(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
+    el.addEventListener("touchmove", function (e) { move(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
+    el.addEventListener("pointerdown", function (e) { down(e.clientX, e.clientY); });
+    el.addEventListener("pointermove", function (e) { move(e.clientX, e.clientY); });
+    el.addEventListener("pointerup", function () { tracking = false; });
+  };
+
+  // Ruudulla napit (dpad) — mobiilivaraus swipelle
+  U.dpad = function (container, cb) {
+    var g = document.createElement("div");
+    g.style.cssText = "display:grid;grid-template-columns:repeat(3,64px);gap:6px;justify-content:center;margin-top:.8rem";
+    function mk(label, dir) {
+      var b = document.createElement("button");
+      b.className = "btn";
+      b.style.minHeight = "52px";
+      b.textContent = label;
+      b.addEventListener("click", function () { cb(dir); });
+      g.appendChild(b);
+      return b;
+    }
+    g.appendChild(document.createElement("span"));
+    mk("▲", "up");
+    g.appendChild(document.createElement("span"));
+    mk("◀", "left");
+    mk("▼", "down");
+    mk("▶", "right");
+    container.appendChild(g);
+    return g;
+  };
+
+  // Pelin otsikkorivi (tavoite + tila)
+  U.statusLine = function (container, text) {
+    var s = document.createElement("div");
+    s.className = "muted";
+    s.style.cssText = "text-align:center;font-family:var(--mono);font-size:.78rem;margin:.5rem 0";
+    s.textContent = text;
+    container.appendChild(s);
+    return {
+      set: function (t) { s.textContent = t; }
+    };
+  };
+
   window.StepsUI = U;
 })();
