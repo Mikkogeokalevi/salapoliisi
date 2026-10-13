@@ -192,6 +192,8 @@
   margin-bottom: .25rem;
 }
 
+.msg.player .who { text-align: right; }
+
 .msg-col { max-width: 85%; }
 
 /* Typo-indikaattori */

@@ -12,9 +12,15 @@
   };
 
   function scrollDown() {
-    if (Story.scrollEl) {
-      Story.scrollEl.scrollTop = Story.scrollEl.scrollHeight + 400;
-    }
+    if (!Story.scrollEl) return;
+    requestAnimationFrame(function () {
+      Story.scrollEl.scrollTop = Story.scrollEl.scrollHeight;
+    });
+  }
+
+  function stamp() {
+    var d = new Date();
+    return ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2);
   }
 
   function bubble() {
@@ -31,7 +37,7 @@
     if (who) {
       var w = document.createElement("div");
       w.className = "who";
-      w.textContent = who;
+      w.textContent = who + " · " + stamp();
       col.appendChild(w);
     }
     var b = bubble();
@@ -47,7 +53,7 @@
   // Handlerin viesti typewriter-efektilla. Palauttaa Promise.
   Story.handler = function (text, opts) {
     opts = opts || {};
-    var who = opts.who || "JOHTAJA";
+    var who = opts.who || "MIKKO";
     var delay = opts.delay == null ? 650 : opts.delay;
     var speed = opts.speed == null ? 14 : opts.speed;
 
@@ -89,7 +95,8 @@
   };
 
   Story.player = function (text) {
-    var b = addMsg("player");
+    var nick = (window.Engine && window.Engine.nickname) || "SINA";
+    var b = addMsg("player", nick.toUpperCase());
     b.textContent = text;
     scrollDown();
     return Promise.resolve();
@@ -136,6 +143,26 @@
     return card;
   };
 
+  // Vapaamuotoinen kysymys pelaajalle - MINKA tahansa vastauksen han kirjoittaa
+  // hyvaksytaan ja tarina jatkuu. m = { ask, respond: "..." | [...] }
+  Story.ask = function (m) {
+    return Story.handler(m.ask).then(function () {
+      return Story.waitForInput();
+    }).then(function (answer) {
+      return Story.player(answer);
+    }).then(function () {
+      var r = m.respond;
+      if (!r) return;
+      if (Array.isArray(r)) r = r[Math.floor(Math.random() * r.length)];
+      return Story.handler(r, { delay: 1000 });
+    });
+  };
+
+  // index.html toteuttaa: palauttaa Promise joka ratkeaa pelaajan tekstiin
+  Story.waitForInput = function () {
+    return Story._inputFn ? Story._inputFn() : Promise.resolve("...");
+  };
+
   // Handlerin moniviestinen "rundi"
   Story.runMessages = function (msgs, done) {
     var p = Promise.resolve();
@@ -143,6 +170,7 @@
       p = p.then(function () {
         if (typeof m === "string") return Story.handler(m);
         if (m && m.type === "system") return Story.system(m.text);
+        if (m && m.ask) return Story.ask(m);
         return Story.handler(m.text || "", m || {});
       });
     });

@@ -97,10 +97,21 @@
   var sheet = $("sheet"), veil = $("veil"), sheetBody = $("sheet-body"), sheetTitle = $("sheet-title");
 
   var soundOn = true;
-  var inputMode = null; // "nick" | "final" | null
+  var inputMode = null; // "nick" | "final" | "chat" | null
   var busy = false;
 
   Story.init(chatEl);
+
+  // Vapaan chatin syotto (Story.ask kayttaa)
+  Story._inputFn = function () {
+    return new Promise(function (resolve) {
+      inputMode = "chat";
+      inputbar.style.display = "flex";
+      mainInput.placeholder = "Kirjoita vastauksesi...";
+      mainInput.focus();
+      Story._chatResolve = resolve;
+    });
+  };
 
   function beep(fn) { if (soundOn && window.Audio) { try { fn(); } catch (e) {} } }
 
@@ -280,6 +291,15 @@
       Story.player(v);
       mainInput.value = "";
       tryFinalCodeVal(v);
+    } else if (inputMode === "chat") {
+      mainInput.value = "";
+      inputbar.style.display = "none";
+      inputMode = null;
+      if (Story._chatResolve) {
+        var r = Story._chatResolve;
+        Story._chatResolve = null;
+        r(v);
+      }
     }
   }
 
