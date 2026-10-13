@@ -273,10 +273,11 @@
   z-index: 50;
   background: rgba(4, 6, 10, .7);
   opacity: 0;
+  pointer-events: none;
   transition: opacity .25s;
 }
 
-.sheet-veil.open { opacity: 1; }
+.sheet-veil.open { opacity: 1; pointer-events: auto; }
 
 .sheet {
   position: fixed;
@@ -292,7 +293,7 @@
   border: 1px solid var(--line);
   border-bottom: none;
   border-radius: 20px 20px 0 0;
-  transform: translateY(105%);
+  transform: translateY(calc(110% + 6vh));
   transition: transform .32s cubic-bezier(.2,.9,.25,1);
 }
 
