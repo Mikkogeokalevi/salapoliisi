@@ -206,7 +206,8 @@
         if (m && m.type === "system") return Story.system(m.text);
         if (m && m.gate) return Story.gate(m);
         if (m && m.ask) return Story.ask(m);
-        return Story.handler(m.text || "", m || {});
+        if (m && typeof m.text === "string") return Story.handler(m.text, m);
+        return; // tuntematon objekti - ei tulosteta "[object Object]"
       });
     });
     return p.then(function () { if (done) done(); });
