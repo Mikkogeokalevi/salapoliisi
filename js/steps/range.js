@@ -40,7 +40,17 @@ window.Steps["range"] = function (container, step, api) {
     cells.push({ el: cell, target: null });
   }
 
-  var hits = 0, misses = 0, done = false, tid = 0;
+  var hits = 0, misses = 0, done = false, tid = 0, started = false;
+
+  var startBtn;
+  startBtn = U.button(container, "Aloita rata", function () {
+    if (started) return;
+    started = true;
+    if (startBtn) { startBtn.parentNode.remove(); startBtn = null; }
+    status.set("Valmiina - maalit tulossa...");
+    g.timeout(700, spawn);
+    g.every(SPAWN, spawn);
+  }, true);
 
   function setStatus() {
     status.set("Osumia " + hits + " / " + GOAL + " · huteja " + misses + " / " + MAXMISS);
@@ -59,7 +69,7 @@ window.Steps["range"] = function (container, step, api) {
   }
 
   function spawn() {
-    if (done || !g.alive()) return;
+    if (done || !g.alive() || !started) return;
     var free = cells.filter(function (c) { return !c.target; });
     if (!free.length) return;
     var c = free[Math.floor(Math.random() * free.length)];
@@ -89,7 +99,7 @@ window.Steps["range"] = function (container, step, api) {
   }
 
   function shoot(idx) {
-    if (done) return;
+    if (done || !started) return;
     var c = cells[idx];
     if (!c.target) {
       miss("Huti - tyhjä laukaus");
@@ -138,7 +148,5 @@ window.Steps["range"] = function (container, step, api) {
   U.hint(container, api);
 
   setStatus();
-  g.timeout(500, spawn);
-  g.every(SPAWN, spawn);
   return g.cleanup;
 };
