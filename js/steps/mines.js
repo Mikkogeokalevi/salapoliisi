@@ -1,12 +1,12 @@
 // Pulmatyyppi: mines - miinakentta. Paljasta kaikki turvalliset ruudut.
-// params: { size: 6, mines: 7 }
+// params: { size: 9, mines: 12 }
 // guess = "selvitetty" + size + "x" + mines
 window.Steps["mines"] = function (container, step, api) {
   "use strict";
   var U = window.StepsUI;
   var P = step.params || {};
-  var N = P.size || 6;
-  var MINES = P.mines || 7;
+  var N = P.size || 9;
+  var MINES = P.mines || 12;
 
   U.prompt(container, step.prompt);
   var g = U.game();
@@ -16,7 +16,7 @@ window.Steps["mines"] = function (container, step, api) {
 
   var board = document.createElement("div");
   board.style.cssText =
-    "display:grid;grid-template-columns:repeat(" + N + ",1fr);gap:4px;" +
+    "display:grid;grid-template-columns:repeat(" + N + ",1fr);gap:3px;" +
     "max-width:340px;margin:1rem auto";
   container.appendChild(board);
 
@@ -115,7 +115,7 @@ window.Steps["mines"] = function (container, step, api) {
       (function (idx) {
         var c = document.createElement("button");
         c.className = "grid-cell";
-        c.style.cssText += ";aspect-ratio:1;font-weight:700;font-size:1rem";
+        c.style.cssText += ";aspect-ratio:1;font-weight:700;font-size:" + (N > 7 ? ".8rem" : "1rem") + ";padding:0;min-height:0";
         if (revealed[idx]) {
           c.disabled = true;
           if (mineField[idx] === -1) {
