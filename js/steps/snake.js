@@ -175,6 +175,19 @@ window.Steps["snake"] = function (container, step, api) {
   U.swipe(cv.el, setDir);
   U.dpad(container, setDir);
 
+  // Kannettavan nappaimisto: nuolinappaimet + WASD
+  g.on(document, "keydown", function (e) {
+    if (e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
+    var k = e.key;
+    var d = k === "ArrowUp" || k === "w" || k === "W" ? "up" :
+            k === "ArrowDown" || k === "s" || k === "S" ? "down" :
+            k === "ArrowLeft" || k === "a" || k === "A" ? "left" :
+            k === "ArrowRight" || k === "d" || k === "D" ? "right" : null;
+    if (!d) return;
+    e.preventDefault(); // nuolia ei saa vierittaa sivua
+    setDir(d);
+  });
+
   reset();
   draw();
   return g.cleanup;
