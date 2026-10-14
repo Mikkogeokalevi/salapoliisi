@@ -84,6 +84,7 @@
         '<td><span class="badge">' + s.type + "</span></td>" +
         '<td class="muted">…</td>' +
         '<td class="mono">…</td>' +
+        '<td><button class="btn ghost btn-test" style="min-height:32px;padding:.2rem .8rem">Testaa</button></td>' +
         '<td><button class="btn ghost" style="min-height:32px;padding:.2rem .8rem">Muokkaa</button></td>';
       // Lataa vastaus+koodinpala pieninana (admin-luku sallittu)
       db().collection("solutions").doc(s.id).get().then(function (d) {
@@ -92,7 +93,10 @@
       db().collection("rewards").doc(s.id).get().then(function (d) {
         tr.children[4].textContent = d.exists ? (d.data().codePart || "-") : "-";
       });
-      tr.querySelector("button").addEventListener("click", function () {
+      tr.querySelector(".btn-test").addEventListener("click", function () {
+        previewStep(s);
+      });
+      tr.querySelectorAll("button")[1].addEventListener("click", function () {
         openEditor(s);
       });
       tb.appendChild(tr);
@@ -190,6 +194,59 @@
       loadAll();
     }).catch(function (e) { msg("Virhe: " + e.message, true); });
   });
+
+  // --- Peliesikatselu -------------------------------------------------
+  // Avaa vaiheen samaan sheet-nakyman kuin pelissa. Kayttaa mock-apia:
+  // vastauksia ei laheteta Firestoreen eika edistymista kirjata.
+  var previewCleanup = null;
+
+  function previewStep(s) {
+    var body = $("sheet-body");
+    body.innerHTML = "";
+    $("sheet-title").textContent =
+      "TESTI: " + (s.title || s.id).toUpperCase() + " (" + s.type + ")";
+    $("veil").classList.add("open");
+    $("sheet").classList.add("open");
+
+    var hints = s.hints || [];
+    var hintIdx = 0;
+    var api = {
+      try: function (guess) {
+        msg("TESTI: lahetys '" + String(guess).slice(0, 40) +
+            "' - ei kirjattu kantaan.", false);
+        var note = document.createElement("div");
+        note.className = "notice ok";
+        note.textContent = "LÄPÄISY ONNISTUI (testitila - kanta koskematon)";
+        body.appendChild(note);
+        if (window.Audio) window.Audio.success();
+        return Promise.resolve({ ok: true });
+      },
+      hint: function () {
+        return hintIdx < hints.length ? hints[hintIdx++] : null;
+      },
+      wrong: function () { return 0; }
+    };
+
+    var fn = window.Steps && window.Steps[s.type];
+    if (fn) {
+      var c = fn(body, s, api);
+      if (typeof c === "function") previewCleanup = c;
+    } else {
+      body.innerHTML = '<div class="notice err">Tuntematon tyyppi: ' +
+        String(s.type) + " - moduulia ei ladattu.</div>";
+    }
+  }
+
+  function closePreview() {
+    $("veil").classList.remove("open");
+    $("sheet").classList.remove("open");
+    if (typeof previewCleanup === "function") {
+      try { previewCleanup(); } catch (e) {}
+      previewCleanup = null;
+    }
+  }
+  $("veil").addEventListener("click", closePreview);
+  $("sheet-close").addEventListener("click", closePreview);
 
   // --- Konfiguraatio -------------------------------------------------
   $("btn-save-config").addEventListener("click", function () {

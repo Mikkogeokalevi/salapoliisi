@@ -6,6 +6,8 @@
 <meta name="theme-color" content="#0a0e14">
 <title>Salapoliisi — Hallinta</title>
 <link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/game.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -54,7 +56,7 @@
 
   <h2>Vaiheet</h2>
   <table class="data" id="steps-table">
-    <thead><tr><th>#</th><th>Otsikko</th><th>Tyyppi</th><th>Vastaus</th><th>Koodinpala</th><th></th></tr></thead>
+    <thead><tr><th>#</th><th>Otsikko</th><th>Tyyppi</th><th>Vastaus</th><th>Koodinpala</th><th></th><th></th></tr></thead>
     <tbody></tbody>
   </table>
   <button class="btn" id="btn-add-step" style="margin-top:.8rem">+ Lisaa vaihe</button>
@@ -72,6 +74,13 @@
           <option value="mapClick">mapClick</option><option value="coords">coords</option>
           <option value="wires">wires</option><option value="sequence">sequence</option>
           <option value="order">order</option><option value="grid">grid</option>
+          <option value="catch">catch</option><option value="snake">snake</option>
+          <option value="stack">stack</option><option value="breakout">breakout</option>
+          <option value="maze">maze</option><option value="mines">mines</option>
+          <option value="flappy">flappy</option><option value="hanoi">hanoi</option>
+          <option value="slider15">slider15</option><option value="memory">memory</option>
+          <option value="mastermind">mastermind</option><option value="targets">targets</option>
+          <option value="runner">runner</option>
         </select>
       </div>
     </div>
@@ -92,11 +101,48 @@
   </div>
 </div>
 
+<!-- Esikatselu-sheet (sama rakenne kuin pelissa) -->
+<div class="sheet-veil" id="veil"></div>
+<div class="sheet" id="sheet">
+  <div class="sheet-head">
+    <span class="grab"></span>
+    <h3 id="sheet-title">ESIKATSELU</h3>
+    <button class="sheet-close" id="sheet-close">✕</button>
+  </div>
+  <div class="sheet-body" id="sheet-body"></div>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="js/config.js"></script>
 <script src="js/firebase-init.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/steps/common.js"></script>
+<script src="js/steps/text.js"></script>
+<script src="js/steps/coords.js"></script>
+<script src="js/steps/lock.js"></script>
+<script src="js/steps/cipher.js"></script>
+<script src="js/steps/morse.js"></script>
+<script src="js/steps/wires.js"></script>
+<script src="js/steps/sequence.js"></script>
+<script src="js/steps/order.js"></script>
+<script src="js/steps/grid.js"></script>
+<script src="js/steps/mapClick.js"></script>
+<script src="js/steps/snake.js"></script>
+<script src="js/steps/breakout.js"></script>
+<script src="js/steps/runner.js"></script>
+<script src="js/steps/memory.js"></script>
+<script src="js/steps/slider15.js"></script>
+<script src="js/steps/mastermind.js"></script>
+<script src="js/steps/targets.js"></script>
+<script src="js/steps/catch.js"></script>
+<script src="js/steps/stack.js"></script>
+<script src="js/steps/maze.js"></script>
+<script src="js/steps/mines.js"></script>
+<script src="js/steps/flappy.js"></script>
+<script src="js/steps/hanoi.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="js/admin.js"></script>
 </body>
 </html>
