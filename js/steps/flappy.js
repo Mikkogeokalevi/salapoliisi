@@ -18,7 +18,14 @@ window.Steps["flappy"] = function (container, step, api) {
   var cv = U.canvas(container, W, H);
   var ctx = cv.ctx;
 
-  var bird, pipes, passed, dead, won, started;
+  var bird, pipes, passed, dead, won, started, armed;
+
+  var startBtn = U.button(container, "Aloita lento", function () {
+    if (armed) return;
+    armed = true;
+    if (startBtn) { startBtn.parentNode.remove(); startBtn = null; }
+    status.set("Kosketa ruutua noustaaksesi");
+  }, true);
 
   function reset() {
     bird = { x: W * 0.28, y: H / 2, vy: 0, r: 11 };
@@ -29,6 +36,7 @@ window.Steps["flappy"] = function (container, step, api) {
   }
 
   function flap() {
+    if (!armed && !started && !dead) return; // vaadi Aloita-nappi ensin
     if (dead) { reset(); return; }
     if (won) return;
     started = true;
@@ -106,7 +114,7 @@ window.Steps["flappy"] = function (container, step, api) {
     ctx.fillStyle = "#e9e7e0";
     ctx.font = "bold 13px monospace";
     ctx.fillText(passed + " / " + GATES, 10, 20);
-    if (!started) {
+    if (armed && !started) {
       ctx.fillStyle = "rgba(233,231,224,.75)";
       ctx.font = "13px monospace";
       ctx.textAlign = "center";

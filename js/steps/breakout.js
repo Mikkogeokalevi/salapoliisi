@@ -19,9 +19,16 @@ window.Steps["breakout"] = function (container, step, api) {
   var cv = U.canvas(container, W, H);
   var ctx = cv.ctx;
 
-  var paddle, balls, bricks, powerups, lives, remaining, running;
+  var paddle, balls, bricks, powerups, lives, remaining, running, armed;
   var baseSpeed = W * .0062;
   var wideUntil = 0, slowUntil = 0;
+
+  var startBtn = U.button(container, "Aloita murtaminen", function () {
+    if (armed) return;
+    armed = true;
+    if (startBtn) { startBtn.parentNode.remove(); startBtn = null; }
+    status.set("Kosketa mailaa - riko kaikki tiilet");
+  }, true);
 
   function speedNow() {
     var s = baseSpeed;
@@ -205,7 +212,7 @@ window.Steps["breakout"] = function (container, step, api) {
       ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, 7);
       ctx.fillStyle = "#e9e7e0"; ctx.fill();
     });
-    if (!running && remaining > 0) {
+    if (armed && !running && remaining > 0) {
       ctx.fillStyle = "rgba(233,231,224,.8)";
       ctx.font = "13px monospace";
       ctx.textAlign = "center";
@@ -216,6 +223,7 @@ window.Steps["breakout"] = function (container, step, api) {
 
   // mailan ohjaus
   function moveTo(clientX) {
+    if (!armed) return; // vaadi Aloita-nappi ensin
     var r = cv.el.getBoundingClientRect();
     paddle.x = Math.max(0, Math.min(W - paddle.w, (clientX - r.left) * (W / r.width) - paddle.w / 2));
     start();

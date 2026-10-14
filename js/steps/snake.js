@@ -22,7 +22,14 @@ window.Steps["snake"] = function (container, step, api) {
   var ctx = cv.ctx;
   var cell = SZ / N;
 
-  var snake, dir, nextDir, apple, eaten, speed, alive, started, bombs;
+  var snake, dir, nextDir, apple, eaten, speed, alive, started, bombs, armed;
+
+  var startBtn = U.button(container, "Aloita peli", function () {
+    if (armed) return;
+    armed = true;
+    if (startBtn) { startBtn.parentNode.remove(); startBtn = null; }
+    status.set("Anna suunta - " + APPLES + " omenaa, varo pommeja!");
+  }, true);
 
   function reset() {
     snake = [{ x: 8, y: 8 }, { x: 7, y: 8 }, { x: 6, y: 8 }];
@@ -31,6 +38,7 @@ window.Steps["snake"] = function (container, step, api) {
     eaten = 0;
     speed = startSpeed;
     alive = true;
+    armed = false;
     bombs = [];
     spawnApple();
     status.set("Tavoite: " + APPLES + " omenaa - varo pommeja!");
@@ -65,8 +73,10 @@ window.Steps["snake"] = function (container, step, api) {
     var map = { left: { x: -1, y: 0 }, right: { x: 1, y: 0 }, up: { x: 0, y: -1 }, down: { x: 0, y: 1 } };
     var nd = map[d];
     if (!nd) return;
+    if (!armed && !started) return; // peli ei ole alkanut - vaadi Aloita-nappi
     if (!alive) {
       reset(); // kuoleman jalkeen: uusi yritys heti
+      armed = true;
     }
     if (nd.x === -dir.x && nd.y === -dir.y) return;
     nextDir = nd;
