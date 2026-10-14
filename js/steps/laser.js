@@ -55,7 +55,8 @@ window.Steps["laser"] = function (container, step, api) {
         tr += d[0]; tc += d[1]; max++;
       }
       if (max < 3) return null;
-      var s = 2 + Math.floor(Math.random() * Math.min(max - 1, 3));
+      // valit jopa 5 askelta -> rata levittaytyy isommalle alueelle
+      var s = 2 + Math.floor(Math.random() * Math.min(max - 1, 4));
       var lr = cur[0] + d[0] * s, lc = cur[1] + d[1] * s;
       if (used[key(lr, lc)] || blocked[key(lr, lc)]) return null;
       for (var k = 1; k <= s; k++) {
@@ -88,7 +89,7 @@ window.Steps["laser"] = function (container, step, api) {
       tr += d[0]; tc += d[1]; max++;
     }
     if (max < 3) return null;
-    var s = 2 + Math.floor(Math.random() * Math.min(max - 1, 3));
+    var s = 2 + Math.floor(Math.random() * Math.min(max - 1, 4));
     var jr = cur[0] + d[0] * s, jc = cur[1] + d[1] * s;
     if (used[key(jr, jc)] || blocked[key(jr, jc)]) return null;
     for (var k = 1; k <= s; k++) used[key(cur[0] + d[0] * k, cur[1] + d[1] * k)] = true;
@@ -225,6 +226,8 @@ window.Steps["laser"] = function (container, step, api) {
       // (suotimet asetetaan vasta nyt - varisokea tarkistus ensin).
       var reachable = Object.keys(sol.hitCells).length === total;
       if (!reachable || (!lv.colored && Object.keys(sol.hits).length !== total)) continue;
+      // vaadi etta polku levittyy ruudukolle (ei triviaalia suoraa ratkaisua)
+      if (Object.keys(sol.cells).length < N * 2.2) continue;
 
       // Varilliset vastaanottimet: suodatin kunkin osuvan sateen polulle.
       // Suosi soluja jotka kuuluvat VAIN kyseisen sateen polkuun.
