@@ -17,7 +17,7 @@
 
   <!-- Ylapalkki -->
   <header class="g-header">
-    <span class="logo">SALAPOLIISI</span>
+    <span class="logo">MIKKOKALEVIN SALAPOLIISITOIMISTO</span>
     <span class="status" id="conn-status">YHDISTETAAN</span>
     <span class="spacer"></span>
     <button class="hdr-btn" id="btn-board">TODISTEET</button>
@@ -37,7 +37,7 @@
 <!-- Boot-overlay -->
 <div class="boot" id="boot">
   <div class="boot-inner">
-    <div class="boot-logo">SALAPOLIISI</div>
+    <div class="boot-logo">SALAPOLIISITOIMISTO</div>
     <div id="boot-lines"></div>
   </div>
 </div>
@@ -264,8 +264,8 @@
     return new Promise(function (resolve) {
       if (Engine.nickname) { resolve(); return; }
       Story.runMessages([
-        { text: "SALASANAKANAVA AVATTU", type: "system" },
-        "Tervetuloa. Tämä on Mikkokalevin etsivätoimiston suljettu tutkintakanava.",
+        { text: "SALAPOLIISIKANAVA AVATTU", type: "system" },
+        "Tervetuloa. Tämä on Mikkokalevin salapoliisitoimiston suljettu tutkintakanava.",
         "Olen palkannut sinut erityiseen tehtävään - mutta ensin: millä nimimerkillä sinua kutsutaan?"
       ]).then(function () {
         inputMode = "nick";

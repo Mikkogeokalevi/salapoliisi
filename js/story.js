@@ -54,11 +54,18 @@
     return b;
   }
 
+  // {nimi} viesteissa -> pelaajan nimimerkki
+  function subst(text) {
+    var nick = (window.Engine && window.Engine.nickname) || "";
+    return String(text || "").replace(/\{nimi\}/gi, nick || "agentti");
+  }
+
   // Viestin tyypit ------------------------------------------------
 
   // Handlerin viesti typewriter-efektilla. Palauttaa Promise.
   Story.handler = function (text, opts) {
     opts = opts || {};
+    text = subst(text);
     var who = opts.who || "MIKKOKALEVI";
     var delay = opts.delay == null ? 650 : opts.delay;
     var speed = opts.speed == null ? 14 : opts.speed;
