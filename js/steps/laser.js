@@ -376,14 +376,20 @@ window.Steps["laser"] = function (container, step, api) {
       var x = m.c * cell, y = m.r * cell, p = Math.max(4, cell * .15);
       var lit = res.cells[key(m.r, m.c)];
       if (m.filter) {
-        // suodatin: vinoneliö, värillinen
+        // suodatin: vinoneliö, värillinen, sykkivä + valkoinen kehys (napautettava)
+        var pulse = 1 + 0.09 * Math.sin(Date.now() / 350 + (m.r * 1.3 + m.c * 0.7));
+        var half = (cell / 2 - p) * pulse;
+        var cx = x + cell / 2, cy = y + cell / 2;
         ctx.fillStyle = CMAP[m.o];
+        ctx.strokeStyle = "rgba(255,255,255,.85)";
+        ctx.lineWidth = 1.5;
         ctx.beginPath();
-        ctx.moveTo(x + cell / 2, y + p);
-        ctx.lineTo(x + cell - p, y + cell / 2);
-        ctx.lineTo(x + cell / 2, y + cell - p);
-        ctx.lineTo(x + p, y + cell / 2);
-        ctx.closePath(); ctx.fill();
+        ctx.moveTo(cx, cy - half);
+        ctx.lineTo(cx + half, cy);
+        ctx.lineTo(cx, cy + half);
+        ctx.lineTo(cx - half, cy);
+        ctx.closePath();
+        ctx.fill(); ctx.stroke();
         return;
       }
       ctx.lineWidth = m.split ? 3.5 : 2.5;
@@ -459,7 +465,14 @@ window.Steps["laser"] = function (container, step, api) {
   var fb = U.feedback(container);
   var submit = U.submitter(container, api, fb);
   U.hint(container, api);
+  U.button(container, "Arpoo uuden radan", function () {
+    if (done) return;
+    taps = 0;
+    startLevel();
+  });
 
   startLevel();
+  // suotimien sykintä: piirretään jatkuvasti
+  (function anim() { if (!done) { draw(); g.raf(anim); } })();
   return g.cleanup;
 };
