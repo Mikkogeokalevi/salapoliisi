@@ -1,13 +1,13 @@
 // Pulmatyyppi: maze - PIMEA pakoreitti. Naet vain muutaman ruudun
 // ymparillesi (taskulamppu). Loyda N avainta, jotka avaavat uloskaynnin.
-// params: { cols: 11, rows: 15, keys: 3, sight: 2 } (pariton luku suositeltu)
+// params: { cols: 17, rows: 23, keys: 3, sight: 2 } (pariton luku suositeltu)
 // guess = "reitti" + cols + "x" + rows
 window.Steps["maze"] = function (container, step, api) {
   "use strict";
   var U = window.StepsUI;
   var P = step.params || {};
-  var COLS = (P.cols || 11) | 1;
-  var ROWS = (P.rows || 15) | 1;
+  var COLS = (P.cols || 17) | 1;
+  var ROWS = (P.rows || 23) | 1;
   var NKEYS = P.keys || 3;
   var SIGHT = P.sight != null ? P.sight : 2;
 
@@ -63,14 +63,14 @@ window.Steps["maze"] = function (container, step, api) {
     var cells = [];
     for (var r = 1; r < ROWS - 1; r++)
       for (var c = 1; c < COLS - 1; c++)
-        if (!walls[r][c] && dist[r][c] > 6 &&
+        if (!walls[r][c] && dist[r][c] > 12 &&
             !(r === ROWS - 2 && c === COLS - 1)) cells.push({ r: r, c: c, d: dist[r][c] });
     cells.sort(function (a, b) { return b.d - a.d; });
     var used = [[1, 1]];
     for (var i = 0; i < cells.length && keys.length < NKEYS; i++) {
       var cand = cells[i];
       var far = used.every(function (u) {
-        return Math.abs(u[0] - cand.r) + Math.abs(u[1] - cand.c) > 6;
+        return Math.abs(u[0] - cand.r) + Math.abs(u[1] - cand.c) > 12;
       });
       if (far) { keys.push(cand); used.push([cand.r, cand.c]); }
     }
