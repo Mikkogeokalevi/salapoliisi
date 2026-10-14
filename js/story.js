@@ -192,6 +192,45 @@
     });
   };
 
+  // Vapaa keskustelu: pelaaja voi kysya MITA tahansa, handler vastaa
+  // avainsanatunnisteella (m.replies) tai oletusvastauksilla (m.default).
+  // Keskustelu jatkuu kunnes pelaaja kirjoittaa lopetussanan.
+  // m = { chat, replies: {"avain|toinen": "vastaus"}, default: [...],
+  //       more: "...", bye: "..." }
+  var END_RE = /^\s*(jatka|jatkuu|mennään|mennan|valmis|ei\b|lopeta|ok\b|selvä|pohja)/i;
+  Story.chat = function (m) {
+    function answer(q) {
+      var low = q.toLowerCase();
+      var reply = null, replies = m.replies || {};
+      Object.keys(replies).forEach(function (group) {
+        group.split("|").forEach(function (k) {
+          if (!reply && k && low.indexOf(k.toLowerCase()) !== -1) reply = replies[group];
+        });
+      });
+      if (!reply) {
+        var defs = m.default && m.default.length ? m.default
+          : ["Hyvä kysymys - mutta nyt tehtävät vaativat huomiosi."];
+        reply = defs[Math.floor(Math.random() * defs.length)];
+      }
+      return Story.handler(reply, { delay: 900 });
+    }
+    function round() {
+      return Story.waitForInput().then(function (a) {
+        a = (a || "").trim();
+        return Story.player(a || "...").then(function () { return a; });
+      }).then(function (a) {
+        if (END_RE.test(a)) {
+          return Story.handler(m.bye || "Selvä - jatketaan.", { delay: 800 });
+        }
+        return answer(a).then(function () {
+          return Story.handler(m.more || "Kysy vielä jotain - tai kirjoita 'jatka'.",
+            { delay: 500 });
+        }).then(round);
+      });
+    }
+    return Story.handler(m.chat || "Kysy vapaasti - tai kirjoita 'jatka'.").then(round);
+  };
+
   // index.html toteuttaa: palauttaa Promise joka ratkeaa pelaajan tekstiin
   Story.waitForInput = function () {
     return Story._inputFn ? Story._inputFn() : Promise.resolve("...");
@@ -206,6 +245,7 @@
         if (m && m.type === "system") return Story.system(m.text);
         if (m && m.gate) return Story.gate(m);
         if (m && m.ask) return Story.ask(m);
+        if (m && m.chat) return Story.chat(m);
         if (m && typeof m.text === "string") return Story.handler(m.text, m);
         return; // tuntematon objekti - ei tulosteta "[object Object]"
       });
