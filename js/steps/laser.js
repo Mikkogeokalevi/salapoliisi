@@ -1,21 +1,27 @@
-// Pulmatyyppi: laser - peilipeli tasoittain.
+// Pulmatyyppi: laser - peilipeli, 5 tasoa.
 // Napauta peileja kaantaaksesi suuntaa (/ tai \). Johdata lasersade
-// lahteesta vastaanottimeen. Vaikeammilla tasoilla mukana sateenjakajia:
-// jakaja paastaa sateen suoraan lapi JA heijastaa sen sivulle - sillon
-// kaikki vastaanottimet (vihrea ruutu) on osuttava yhta aikaa.
+// lahteesta vastaanottimeen. Vaikeammilla tasoilla:
+//   - sateenjakajat (violetti): sade jatkaa suoraan JA heijastuu sivulle
+//   - kiinteet peilit (tummat): eivat kaanny, ohitettava muilla peileilla
+//   - esteet (seinat): sade pysahtyy, ei voi kulkea lapi
+//   - varilliset vastaanottimet + suotimet: sade on varjattava oikein
 // Rata generoidaan joka kerralla ja varmistetaan ratkaistavaksi.
-// params: { levels: [ { size, turns, decoys } |
-//                     { size, stem, branch, decoys, split:true } ] }
+// params: { levels: [ {size,turns,decoys,fixed,walls}
+//          | {size,stem,branch,decoys,fixed,walls,split:true,colored:true} ] }
 // guess = "rele" + tasojen maara
 window.Steps["laser"] = function (container, step, api) {
   "use strict";
   var U = window.StepsUI;
   var P = step.params || {};
   var LEVELS = P.levels || [
-    { size: 7, turns: 4, decoys: 3 },
-    { size: 9, turns: 6, decoys: 5 },
-    { size: 11, stem: 3, branch: 2, decoys: 7, split: true }
+    { size: 7,  turns: 4, decoys: 3 },
+    { size: 9,  turns: 6, decoys: 4, walls: 4, fixed: 2 },
+    { size: 11, stem: 3, branch: 2, decoys: 6, split: true },
+    { size: 11, stem: 4, branch: 2, decoys: 7, split: true, walls: 6, fixed: 3 },
+    { size: 13, stem: 3, branch: 3, decoys: 8, split: true, walls: 7, fixed: 3, colored: true }
   ];
+  var FCYCLE = ["r", "g", "b"];
+  var CMAP = { w: "#e8c05a", r: "#e05555", g: "#6fd597", b: "#5ec8e8" };
 
   U.prompt(container, step.prompt);
   var g = U.game();
@@ -27,7 +33,7 @@ window.Steps["laser"] = function (container, step, api) {
 
   var li = 0, done = false, taps = 0;
   var N = 7, cell, H, cv, ctx;
-  var mirrors, emitter, receivers = {}, mirrorAt = {};
+  var mirrors, walls, emitter, receivers, mirrorAt;
 
   function inside(r, c) { return r >= 0 && r < N && c >= 0 && c < N; }
   function key(r, c) { return r + "," + c; }
@@ -38,126 +44,155 @@ window.Steps["laser"] = function (container, step, api) {
     mirrors.forEach(function (m) { mirrorAt[key(m.r, m.c)] = m; });
   }
 
-  // Asettaa count peilia jatkaen pisteesta cur suuntaan d.
-  // Palauttaa {cur,d} tai null jos ei onnistu.
-  function buildLegs(count, cur, d, used, mirrorCells) {
+  // count peilia jatkaen pisteesta cur suuntaan d. blocked = {seinat + peilit}.
+  function buildLegs(count, cur, d, used, blocked) {
+    var cellsOut = [];
     for (var t = 0; t < count; t++) {
       var max = 0, tr = cur[0], tc = cur[1];
-      while (inside(tr + d[0], tc + d[1]) && !mirrorCells[key(tr + d[0], tc + d[1])]) {
+      while (inside(tr + d[0], tc + d[1]) && !blocked[key(tr + d[0], tc + d[1])]) {
         tr += d[0]; tc += d[1]; max++;
       }
       if (max < 3) return null;
       var s = 2 + Math.floor(Math.random() * Math.min(max - 1, 3));
       var lr = cur[0] + d[0] * s, lc = cur[1] + d[1] * s;
-      if (used[key(lr, lc)]) return null;
-      for (var k = 1; k <= s; k++) used[key(cur[0] + d[0] * k, cur[1] + d[1] * k)] = true;
+      if (used[key(lr, lc)] || blocked[key(lr, lc)]) return null;
+      for (var k = 1; k <= s; k++) {
+        used[key(cur[0] + d[0] * k, cur[1] + d[1] * k)] = true;
+        cellsOut.push(key(cur[0] + d[0] * k, cur[1] + d[1] * k));
+      }
       cur[0] = lr; cur[1] = lc;
       var perps = d[0] === 0 ? [[-1, 0], [1, 0]] : [[0, -1], [0, 1]];
       var opts = perps.filter(function (pd) {
+        var n1 = key(cur[0] + pd[0], cur[1] + pd[1]);
+        var n2 = key(cur[0] + pd[0] * 2, cur[1] + pd[1] * 2);
         return inside(cur[0] + pd[0], cur[1] + pd[1]) &&
                inside(cur[0] + pd[0] * 2, cur[1] + pd[1] * 2) &&
-               !mirrorCells[key(cur[0] + pd[0], cur[1] + pd[1])] &&
-               !mirrorCells[key(cur[0] + pd[0] * 2, cur[1] + pd[1] * 2)];
+               !blocked[n1] && !blocked[n2];
       });
       if (!opts.length) return null;
       var nd = opts[Math.floor(Math.random() * opts.length)];
       var need = (nd[0] === -d[1] && nd[1] === -d[0]) ? "/" : "\\";
-      mirrorCells[key(lr, lc)] = true;
-      mirrors.push({ r: lr, c: lc, need: need, o: need, split: false });
+      blocked[key(lr, lc)] = true;
+      mirrors.push({ r: lr, c: lc, need: need, o: need, split: false, fixed: false, filter: false });
       d = nd;
     }
-    return { cur: cur, d: d };
+    return { cur: cur, d: d, cells: cellsOut };
   }
 
-  // Vastaanotin sinne minne sade osuu (reuna tai peili pysayttaa).
-  function endAtReceiver(cur, d, mirrorCells, used) {
-    var rr = cur[0], cc = cur[1], dist = 0;
+  // Vastaanotin sinne minne sade osuu. color='w' = neutraali.
+  function endAtReceiver(cur, d, blocked, used, color) {
+    var rr = cur[0], cc = cur[1], dist = 0, cellsOut = [];
     while (true) {
       var nr = rr + d[0], nc = cc + d[1];
-      if (!inside(nr, nc) || mirrorCells[key(nr, nc)]) break;
-      rr = nr; cc = nc; dist++;
+      if (!inside(nr, nc) || blocked[key(nr, nc)]) break;
+      rr = nr; cc = nc; cellsOut.push(key(nr, nc)); dist++;
     }
-    if (dist < 2 || used[key(rr, cc)]) return false;
-    receivers[key(rr, cc)] = { r: rr, c: cc };
+    if (dist < 2 || used[key(rr, cc)]) return null;
+    receivers[key(rr, cc)] = { r: rr, c: cc, color: color || "w" };
     used[key(rr, cc)] = true;
-    return true;
+    return cellsOut;
   }
 
-  // Simuloi kaikki sadehaarat. Palauttaa {hits:{key:true}, cells:{key:true}, segs:[]}
+  // Simuloi sadehaarat. Palauttaa {hits, cells, segs, hitCells}
+  // hits[rk]=true kun vastaanotin osui OIKEALLA varilla.
   function trace() {
-    var hits = {}, cells = {}, segs = [], seen = {};
-    var q = [[emitter.r, emitter.c, emitter.d[0], emitter.d[1]]];
+    var hits = {}, cells = {}, segs = [], seen = {}, hitCells = {};
+    var q = [[emitter.r, emitter.c, emitter.d[0], emitter.d[1], "w", [key(emitter.r, emitter.c)]]];
     var guard = 0;
-    while (q.length && guard++ < 400) {
+    while (q.length && guard++ < 300) {
       var b = q.shift();
-      var r = b[0], c = b[1], dr = b[2], dc = b[3];
+      var r = b[0], c = b[1], dr = b[2], dc = b[3], col = b[4], path = b[5];
       var r0 = r, c0 = c;
       while (true) {
         var nr = r + dr, nc = c + dc;
-        if (!inside(nr, nc)) { segs.push([r0, c0, nr, nc]); break; }
+        if (!inside(nr, nc)) { segs.push([r0, c0, nr, nc, col]); break; }
         r = nr; c = nc;
         var k = key(r, c);
-        cells[k] = true;
-        if (receivers[k]) { hits[k] = true; segs.push([r0, c0, r, c]); break; }
+        cells[k] = true; path.push(k);
+        if (walls[k]) { segs.push([r0, c0, r, c, col]); break; }
+        if (receivers[k]) {
+          segs.push([r0, c0, r, c, col]);
+          if (!hitCells[k]) hitCells[k] = path; // polku osuneelle (vari ratkaisee osuman)
+          if (receivers[k].color === "w" || receivers[k].color === col) hits[k] = true;
+          break;
+        }
         var m = mirrorAt[k];
+        if (m && m.filter) {
+          col = m.o; // suodatin variaba sateen
+          continue;
+        }
         if (m) {
-          var sk = k + "," + dr + "," + dc;
-          if (seen[sk]) { segs.push([r0, c0, r, c]); break; }
+          var sk = k + "," + dr + "," + dc + "," + col;
+          if (seen[sk]) { segs.push([r0, c0, r, c, col]); break; }
           seen[sk] = true;
           var ref = reflect(m.o, dr, dc);
-          segs.push([r0, c0, r, c]);
+          segs.push([r0, c0, r, c, col]);
           r0 = r; c0 = c;
-          if (m.split) {
-            q.push([r, c, ref[0], ref[1]]); // heijastunut haara
-            // suora haara jatkaa samalla silmukalla
-          } else {
-            dr = ref[0]; dc = ref[1];
-          }
+          if (m.split) q.push([r, c, ref[0], ref[1], col, path.slice()]);
+          else { dr = ref[0]; dc = ref[1]; }
         }
       }
     }
-    return { hits: hits, cells: cells, segs: segs };
+    return { hits: hits, cells: cells, segs: segs, hitCells: hitCells };
   }
 
   function gen() {
     var lv = LEVELS[li];
     N = lv.size;
-    for (var att = 0; att < 400; att++) {
-      mirrors = []; receivers = {};
-      var used = {}, mirrorCells = {};
+    for (var att = 0; att < 500; att++) {
+      mirrors = []; receivers = {}; walls = {};
+      var used = {};
+      var blocked = {}; // seinat + peilit + jakajat (ei suotimia)
       var r = 1 + Math.floor(Math.random() * (N - 2));
       var d = [0, 1];
       emitter = { r: r, c: 0, d: d.slice() };
       used[key(r, 0)] = true;
 
+      // seinat ensin: sade ei kulje lapi
+      var wn = lv.walls || 0;
+      for (var wi = 0; wi < wn * 6 && wn; wi++) {
+        if (Object.keys(walls).length >= wn) break;
+        var wr = Math.floor(Math.random() * N), wc = 1 + Math.floor(Math.random() * (N - 1));
+        var wk = key(wr, wc);
+        if (used[wk] || blocked[wk]) continue;
+        walls[wk] = { r: wr, c: wc };
+        blocked[wk] = true; used[wk] = true;
+      }
+
       var stem = lv.split ? (lv.stem || 3) : (lv.turns || 4);
-      var res = buildLegs(stem, [r, 0], d, used, mirrorCells);
+      var res = buildLegs(stem, [r, 0], d, used, blocked);
       if (!res) continue;
       var cur = res.cur; d = res.d;
+      var stemCells = res.cells;
+
+      var colorQueue = lv.colored ? FCYCLE.slice() : null;
 
       if (!lv.split) {
-        if (!endAtReceiver(cur, d, mirrorCells, used)) continue;
+        var col = colorQueue ? colorQueue[0] : "w";
+        if (!endAtReceiver(cur, d, blocked, used, col)) continue;
       } else {
-        // jakaja: etene viela yksi jalka, jakaja loppuun
         var max = 0, tr = cur[0], tc = cur[1];
-        while (inside(tr + d[0], tc + d[1]) && !mirrorCells[key(tr + d[0], tc + d[1])]) {
+        while (inside(tr + d[0], tc + d[1]) && !blocked[key(tr + d[0], tc + d[1])]) {
           tr += d[0]; tc += d[1]; max++;
         }
         if (max < 3) continue;
         var s = 2 + Math.floor(Math.random() * Math.min(max - 1, 3));
         var jr = cur[0] + d[0] * s, jc = cur[1] + d[1] * s;
-        if (used[key(jr, jc)]) continue;
+        if (used[key(jr, jc)] || blocked[key(jr, jc)]) continue;
         for (var k = 1; k <= s; k++) used[key(cur[0] + d[0] * k, cur[1] + d[1] * k)] = true;
         var so = Math.random() < 0.5 ? "/" : "\\";
         var ref = reflect(so, d[0], d[1]);
-        mirrors.push({ r: jr, c: jc, need: so, o: so, split: true });
-        mirrorCells[key(jr, jc)] = true;
+        mirrors.push({ r: jr, c: jc, need: so, o: so, split: true, fixed: false, filter: false });
+        blocked[key(jr, jc)] = true;
 
-        var bA = buildLegs(lv.branch || 2, [jr, jc], d.slice(), used, mirrorCells);
-        var bB = buildLegs(lv.branch || 2, [jr, jc], ref.slice(), used, mirrorCells);
+        var bA = buildLegs(lv.branch || 2, [jr, jc], d.slice(), used, blocked);
+        var bB = buildLegs(lv.branch || 2, [jr, jc], ref.slice(), used, blocked);
         if (!bA || !bB) continue;
-        if (!endAtReceiver(bA.cur, bA.d, mirrorCells, used)) continue;
-        if (!endAtReceiver(bB.cur, bB.d, mirrorCells, used)) continue;
+        var cA = colorQueue ? colorQueue[0] : "w";
+        var cB = colorQueue ? (colorQueue[1] || "g") : "w";
+        var cellsA = endAtReceiver(bA.cur, bA.d, blocked, used, cA);
+        var cellsB = endAtReceiver(bB.cur, bB.d, blocked, used, cB);
+        if (!cellsA || !cellsB) continue;
         if (Object.keys(receivers).length < 2) continue;
       }
 
@@ -165,29 +200,82 @@ window.Steps["laser"] = function (container, step, api) {
       indexMirrors();
       mirrors.forEach(function (m) { m.o = m.need; });
       var sol = trace();
-      if (Object.keys(sol.hits).length !== Object.keys(receivers).length) continue;
+      var total = Object.keys(receivers).length;
+      // varittomalla tasolla: hits ratkaisee. varillisella: tavoittavuus ratkaisee
+      // (suotimet asetetaan vasta nyt - varisokea tarkistus ensin).
+      var reachable = Object.keys(sol.hitCells).length === total;
+      if (!reachable || (!lv.colored && Object.keys(sol.hits).length !== total)) continue;
+
+      // Varilliset vastaanottimet: suodatin kunkin osuvan sateen polulle.
+      // Suosi soluja jotka kuuluvat VAIN kyseisen sateen polkuun.
+      if (lv.colored) {
+        var okF = true;
+        for (var rk in receivers) {
+          var rc = receivers[rk];
+          var others = {};
+          for (var ok2 in sol.hitCells) {
+            if (ok2 === rk) continue;
+            sol.hitCells[ok2].forEach(function (ck) { others[ck] = true; });
+          }
+          var own = sol.hitCells[rk].filter(function (ck) {
+            return !blocked[ck] && !receivers[ck] && !others[ck];
+          });
+          var cand = own.length ? own : sol.hitCells[rk].filter(function (ck) {
+            return !blocked[ck] && !receivers[ck];
+          });
+          if (!cand.length) { okF = false; break; }
+          var fk = cand[Math.floor(Math.random() * cand.length)];
+          var fr = +fk.split(",")[0], fc = +fk.split(",")[1];
+          mirrors.push({ r: fr, c: fc, need: rc.color, o: rc.color, split: false, fixed: false, filter: true });
+          used[fk] = true;
+        }
+        if (!okF) continue;
+        // suotimet paikallaan -> varmista etta varit myos osuvat
+        indexMirrors();
+        sol = trace();
+        if (Object.keys(sol.hits).length !== total) continue;
+      }
       for (var k2 in sol.cells) used[k2] = true;
 
       // Sekoita nayttoasennot pois ratkaisusta.
-      mirrors.forEach(function (m) { m.o = Math.random() < 0.5 ? "/" : "\\"; });
+      mirrors.forEach(function (m) {
+        if (m.filter) {
+          var others = FCYCLE.filter(function (x) { return x !== m.need; });
+          m.o = others[Math.floor(Math.random() * others.length)];
+        } else {
+          m.o = Math.random() < 0.5 ? "/" : "\\";
+        }
+      });
 
-      // Haitapeilit vapaaseen tilaan (ei ratkaisupolulle).
+      // Kiinteet peilit + haittapeilit vapaaseen tilaan.
       var empt = [];
       for (var er = 0; er < N; er++)
         for (var ec = 0; ec < N; ec++)
           if (!used[key(er, ec)]) empt.push([er, ec]);
-      for (var i = 0; i < (lv.decoys || 0) && empt.length; i++) {
-        var pk = empt.splice(Math.floor(Math.random() * empt.length), 1)[0];
-        mirrors.push({ r: pk[0], c: pk[1], need: null, o: Math.random() < 0.5 ? "/" : "\\", split: false });
+      function scatter(count, fixedFlag) {
+        for (var i = 0; i < count && empt.length; i++) {
+          var pk = empt.splice(Math.floor(Math.random() * empt.length), 1)[0];
+          mirrors.push({ r: pk[0], c: pk[1], need: null,
+            o: Math.random() < 0.5 ? "/" : "\\",
+            split: false, fixed: fixedFlag, filter: false });
+        }
       }
+      scatter(lv.fixed || 0, true);
+      scatter(lv.decoys || 0, false);
       indexMirrors();
 
-      // Jos sekoitus osui valmiiksi ratkaisuksi, vaaranna yksi peili.
-      var guard = 0, total = Object.keys(receivers).length;
-      while (Object.keys(trace().hits).length === total && guard++ < 12) {
-        var sols = mirrors.filter(function (m) { return m.need; });
+      // Jos sekoitus osui valmiiksi ratkaisuksi, vaaranna yksi palanen.
+      var guard = 0;
+      while (Object.keys(trace().hits).length === total && guard++ < 15) {
+        var sols = mirrors.filter(function (m) { return m.need && !m.fixed; });
+        if (!sols.length) break;
         var fl = sols[Math.floor(Math.random() * sols.length)];
-        fl.o = fl.need === "/" ? "\\" : "/";
+        if (fl.filter) {
+          var oth = FCYCLE.filter(function (x) { return x !== fl.need; });
+          fl.o = oth[Math.floor(Math.random() * oth.length)];
+        } else {
+          fl.o = fl.need === "/" ? "\\" : "/";
+        }
       }
       return true;
     }
@@ -206,7 +294,6 @@ window.Steps["laser"] = function (container, step, api) {
   function draw() {
     var res = trace();
     var total = Object.keys(receivers).length;
-    var hitCount = Object.keys(res.hits).length;
     ctx.fillStyle = "#05080e";
     ctx.fillRect(0, 0, W, H);
     // ruudukko
@@ -216,17 +303,26 @@ window.Steps["laser"] = function (container, step, api) {
       ctx.beginPath(); ctx.moveTo(i * cell, 0); ctx.lineTo(i * cell, H); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(0, i * cell); ctx.lineTo(W, i * cell); ctx.stroke();
     }
-    // sadehaarat
-    ctx.strokeStyle = "rgba(232,192,90,.85)";
+    // seinat
+    for (var wk in walls) {
+      var wc2 = walls[wk];
+      ctx.fillStyle = "#1c2333";
+      ctx.fillRect(wc2.c * cell + 1, wc2.r * cell + 1, cell - 2, cell - 2);
+      ctx.strokeStyle = "#2e3b55";
+      ctx.strokeRect(wc2.c * cell + 1.5, wc2.r * cell + 1.5, cell - 3, cell - 3);
+    }
+    // sadehaarat (varit)
     ctx.lineWidth = 2;
-    ctx.shadowColor = "#e8c05a"; ctx.shadowBlur = 8;
+    ctx.shadowBlur = 8;
     res.segs.forEach(function (s) {
+      var col = CMAP[s[4]] || CMAP.w;
+      ctx.strokeStyle = col;
+      ctx.shadowColor = col;
       var x1 = s[1] * cell + cell / 2, y1 = s[0] * cell + cell / 2;
       var x2, y2;
       if (inside(s[2], s[3])) {
         x2 = s[3] * cell + cell / 2; y2 = s[2] * cell + cell / 2;
       } else {
-        // sade karkaa ruudukosta -> piirra reunaan asti
         var r2 = Math.max(0, Math.min(N - 1, s[2])), c2 = Math.max(0, Math.min(N - 1, s[3]));
         x2 = c2 * cell + cell / 2 + Math.sign(s[3] - s[1]) * cell / 2;
         y2 = r2 * cell + cell / 2 + Math.sign(s[2] - s[0]) * cell / 2;
@@ -241,35 +337,54 @@ window.Steps["laser"] = function (container, step, api) {
     ctx.lineTo(emitter.c * cell + cell * .55, emitter.r * cell + 4);
     ctx.lineTo(emitter.c * cell + cell * .55, emitter.r * cell + cell - 4);
     ctx.closePath(); ctx.fill();
-    // vastaanottimet
+    // vastaanottimet (varilliset)
     for (var rk in receivers) {
       var rc = receivers[rk];
       var got = res.hits[rk];
-      ctx.strokeStyle = got ? "#6fd597" : "rgba(111,213,151,.45)";
+      var col2 = rc.color === "w" ? "#6fd597" : CMAP[rc.color];
+      ctx.strokeStyle = got ? col2 : col2 + "88";
       ctx.lineWidth = 2.5;
       var pad = Math.max(3, cell * .15);
       ctx.strokeRect(rc.c * cell + pad, rc.r * cell + pad, cell - pad * 2, cell - pad * 2);
       if (got) {
-        ctx.fillStyle = "rgba(111,213,151,.3)";
+        ctx.fillStyle = col2 + "44";
         ctx.fillRect(rc.c * cell + pad, rc.r * cell + pad, cell - pad * 2, cell - pad * 2);
       }
     }
-    // peilit + jakajat
+    // peilit, jakajat, suotimet
     mirrors.forEach(function (m) {
       var x = m.c * cell, y = m.r * cell, p = Math.max(4, cell * .15);
+      var lit = res.cells[key(m.r, m.c)];
+      if (m.filter) {
+        // suodatin: vinoneliö, värillinen
+        ctx.fillStyle = CMAP[m.o];
+        ctx.beginPath();
+        ctx.moveTo(x + cell / 2, y + p);
+        ctx.lineTo(x + cell - p, y + cell / 2);
+        ctx.lineTo(x + cell / 2, y + cell - p);
+        ctx.lineTo(x + p, y + cell / 2);
+        ctx.closePath(); ctx.fill();
+        return;
+      }
       ctx.lineWidth = m.split ? 3.5 : 2.5;
-      ctx.strokeStyle = res.cells[key(m.r, m.c)] ? (m.split ? "#d9a8f0" : "#dfe7f2") : (m.split ? "#8a63b8" : "#7c8aa5");
+      if (m.fixed) ctx.strokeStyle = "#4a5468";
+      else ctx.strokeStyle = lit ? (m.split ? "#d9a8f0" : "#dfe7f2") : (m.split ? "#8a63b8" : "#7c8aa5");
       ctx.beginPath();
       if (m.o === "/") { ctx.moveTo(x + p, y + cell - p); ctx.lineTo(x + cell - p, y + p); }
       else { ctx.moveTo(x + p, y + p); ctx.lineTo(x + cell - p, y + cell - p); }
       ctx.stroke();
       if (m.split) {
-        // jakajalle pieni nelio keskelle tunnisteeksi
         ctx.fillStyle = ctx.strokeStyle;
         ctx.fillRect(x + cell / 2 - 2.5, y + cell / 2 - 2.5, 5, 5);
+      } else if (m.fixed) {
+        ctx.fillStyle = ctx.strokeStyle;
+        ctx.font = "bold " + Math.floor(cell * .45) + "px sans-serif";
+        ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.fillText("×", x + cell / 2, y + cell / 2);
+        ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
       }
     });
-    return hitCount === total;
+    return res.hits;
   }
 
   function tap(e) {
@@ -278,13 +393,21 @@ window.Steps["laser"] = function (container, step, api) {
     var x = (e.clientX - rect.left) * (W / rect.width);
     var y = (e.clientY - rect.top) * (H / rect.height);
     var m = mirrorAt[key(Math.floor(y / cell), Math.floor(x / cell))];
-    if (!m) return;
-    m.o = m.o === "/" ? "\\" : "/";
+    if (!m || m.fixed) {
+      if (m && m.fixed) status.set("TASO " + (li + 1) + "/" + LEVELS.length + " · kiinteä peili ei käänny");
+      return;
+    }
+    if (m.filter) {
+      var idx = (FCYCLE.indexOf(m.o) + 1) % FCYCLE.length;
+      m.o = FCYCLE[idx];
+    } else {
+      m.o = m.o === "/" ? "\\" : "/";
+    }
     taps++;
     if (window.Audio) window.Audio.tick();
-    var lv = LEVELS[li];
+    var hits = draw();
     var total = Object.keys(receivers).length;
-    if (draw()) {
+    if (Object.keys(hits).length === total) {
       if (li + 1 < LEVELS.length) {
         status.set("TASO " + (li + 1) + " LÄPÄISTY! Uusi rata latautuu...");
         if (window.Audio) window.Audio.click();
@@ -292,12 +415,14 @@ window.Steps["laser"] = function (container, step, api) {
         g.timeout(900, function () { if (!done) startLevel(); });
       } else {
         done = true;
-        status.set("Kaikki tasot läpäisty - " + taps + " käännöstä viimeisellä");
+        status.set("Kaikki " + LEVELS.length + " tasoa läpäisty!");
         if (window.Audio) window.Audio.success();
         submit("rele" + LEVELS.length);
       }
     } else {
-      status.set("TASO " + (li + 1) + "/" + LEVELS.length + " · " + taps + " käännöstä");
+      var got = Object.keys(hits).length;
+      status.set("TASO " + (li + 1) + "/" + LEVELS.length + " · " + taps + " käännöstä" +
+        (total > 1 ? " · maaleja " + got + "/" + total : ""));
     }
   }
 
@@ -306,7 +431,8 @@ window.Steps["laser"] = function (container, step, api) {
     setupCanvas();
     var lv = LEVELS[li];
     status.set("TASO " + (li + 1) + " / " + LEVELS.length +
-      (lv.split ? " · johdata säde MOLEMPIIN maaleihin" : " - johdata säde maaliin"));
+      (lv.split ? " · jakaja: kaikki maalit osuttava" : " - johdata säde maaliin") +
+      (lv.colored ? " · värit!" : ""));
     draw();
   }
 
