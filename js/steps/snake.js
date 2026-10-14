@@ -15,7 +15,8 @@ window.Steps["snake"] = function (container, step, api) {
 
   U.prompt(container, step.prompt);
   var g = U.game();
-  var status = U.statusLine(container, "Tavoite: " + APPLES + " omenaa - varo pommeja!");
+  var status = U.statusLine(container,
+    "Pyyhkäise ruutua tai käytä nuolinäppäimiä - " + APPLES + " omenaa, varo pommeja!");
 
   var SZ = Math.min(360, Math.floor(window.innerWidth * 0.88));
   var cv = U.canvas(container, SZ, SZ);
@@ -41,7 +42,7 @@ window.Steps["snake"] = function (container, step, api) {
     armed = false;
     bombs = [];
     spawnApple();
-    status.set("Tavoite: " + APPLES + " omenaa - varo pommeja!");
+    status.set("Pyyhkäise tai käytä nuolia - " + APPLES + " omenaa, varo pommeja!");
   }
 
   function freeCell() {
@@ -173,7 +174,7 @@ window.Steps["snake"] = function (container, step, api) {
   U.hint(container, api);
 
   U.swipe(cv.el, setDir);
-  U.dpad(container, setDir);
+  // D-pad pois kaytosta: mobiilissa swipe riittaa, kannettavalla nuolinappaimet
 
   // Kannettavan nappaimisto: nuolinappaimet + WASD
   g.on(document, "keydown", function (e) {

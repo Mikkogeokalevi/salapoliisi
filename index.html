@@ -159,12 +159,14 @@
     sheetTitle.textContent = (step.title || "TEHTAVA").toUpperCase();
     veil.classList.add("open");
     sheet.classList.add("open");
+    document.body.classList.add("sheet-lock");
     renderStep(step);
   }
   function closeSheet() {
     sheetOpen = false;
     veil.classList.remove("open");
     sheet.classList.remove("open");
+    document.body.classList.remove("sheet-lock");
     if (typeof activeCleanup === "function") {
       try { activeCleanup(); } catch (e) {}
       activeCleanup = null;
@@ -338,6 +340,7 @@
     sheetTitle.textContent = "TODISTELOKI";
     veil.classList.add("open");
     sheet.classList.add("open");
+    document.body.classList.add("sheet-lock");
     sheetOpen = true;
 
     var solvedN = Engine.steps.filter(function (s) { return Engine.solved[s.id]; }).length;

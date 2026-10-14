@@ -207,6 +207,7 @@
       "TESTI: " + (s.title || s.id).toUpperCase() + " (" + s.type + ")";
     $("veil").classList.add("open");
     $("sheet").classList.add("open");
+    document.body.classList.add("sheet-lock");
 
     var hints = s.hints || [];
     var hintIdx = 0;
@@ -240,6 +241,7 @@
   function closePreview() {
     $("veil").classList.remove("open");
     $("sheet").classList.remove("open");
+    document.body.classList.remove("sheet-lock");
     if (typeof previewCleanup === "function") {
       try { previewCleanup(); } catch (e) {}
       previewCleanup = null;
