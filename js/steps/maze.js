@@ -77,6 +77,7 @@ window.Steps["maze"] = function (container, step, api) {
   }
 
   var px = 1, py = 1, found = 0, done = false, moves = 0;
+  var lamps = 2, lampUntil = 0; // taskulamppu: 2 latausta, 3 s valo
 
   function tryMove(dr, dc) {
     if (done) return;
@@ -110,13 +111,14 @@ window.Steps["maze"] = function (container, step, api) {
   }
 
   function draw() {
+    var lit = Date.now() < lampUntil; // taskulamppu paalla
     ctx.fillStyle = "#05080e";
     ctx.fillRect(0, 0, W, H);
     for (var r = 0; r < ROWS; r++) {
       for (var c = 0; c < COLS; c++) {
         var d = Math.abs(r - py) + Math.abs(c - px);
-        if (d > SIGHT) continue; // pimeys
-        var fade = d === SIGHT ? .45 : 1;
+        if (!lit && d > SIGHT) continue; // pimeys
+        var fade = lit ? 1 : (d === SIGHT ? .45 : 1);
         if (walls[r][c]) {
           ctx.fillStyle = "rgba(38,50,74," + fade + ")";
           ctx.fillRect(c * cell, r * cell, cell - 1, cell - 1);
@@ -129,7 +131,7 @@ window.Steps["maze"] = function (container, step, api) {
     // avaimet nakyvissa
     keys.forEach(function (k) {
       var d = Math.abs(k.r - py) + Math.abs(k.c - px);
-      if (d > SIGHT) return;
+      if (!lit && d > SIGHT) return;
       ctx.fillStyle = "#e2b46a";
       ctx.font = Math.floor(cell * .7) + "px serif";
       ctx.textAlign = "center"; ctx.textBaseline = "middle";
@@ -138,7 +140,7 @@ window.Steps["maze"] = function (container, step, api) {
     });
     // uloskaynti
     var ed = Math.abs(ROWS - 2 - py) + Math.abs(COLS - 1 - px);
-    if (ed <= SIGHT) {
+    if (lit || ed <= SIGHT) {
       ctx.fillStyle = found >= NKEYS ? "#6fd597" : "#8a6c3e";
       ctx.fillRect((COLS - 1) * cell + 1, (ROWS - 2) * cell + 1, cell - 2, cell - 2);
     }
@@ -159,7 +161,19 @@ window.Steps["maze"] = function (container, step, api) {
 
   var fb = U.feedback(container);
   var submit = U.submitter(container, api, fb);
-  U.hint(container, api);
+
+  // Taskulamppu vihjeen sijaan: 2 latausta, valaisee koko kentan 3 s
+  var lampBtn = U.button(container, "🔦 Taskulamppu (" + lamps + ")", function () {
+    if (done || lamps <= 0) return;
+    lamps--;
+    lampUntil = Date.now() + 3000;
+    lampBtn.textContent = "🔦 Taskulamppu (" + lamps + ")";
+    if (!lamps) lampBtn.disabled = true;
+    if (window.Audio) window.Audio.click();
+    status.set("Lamppu palaa - muistele reittiä! (3 s)");
+    draw();
+    g.timeout(3100, function () { if (g.alive()) draw(); });
+  }, false);
 
   gen();
   placeKeys();
