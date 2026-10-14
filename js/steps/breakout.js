@@ -15,7 +15,8 @@ window.Steps["breakout"] = function (container, step, api) {
   var status = U.statusLine(container, "Riko kaikki tiilet");
 
   var W = Math.min(360, Math.floor(window.innerWidth * 0.88));
-  var H = Math.floor(W * 1.15);
+  var H = Math.floor(W * 1.08);
+  var PADDLE_Y = H - 78; // mailan alle jaa ohjausalue: sormi ei peita mailaa
   var cv = U.canvas(container, W, H);
   var ctx = cv.ctx;
 
@@ -43,8 +44,8 @@ window.Steps["breakout"] = function (container, step, api) {
 
   function reset(keepLives) {
     var pw = W * .18;
-    paddle = { w: Date.now() < wideUntil ? pw * 1.4 : pw, wBase: pw, h: 9, x: W / 2 - pw / 2, y: H - 24 };
-    balls = [mkBall(W / 2, H - 36, 0.2)];
+    paddle = { w: Date.now() < wideUntil ? pw * 1.4 : pw, wBase: pw, h: 9, x: W / 2 - pw / 2, y: PADDLE_Y };
+    balls = [mkBall(W / 2, PADDLE_Y - 14, 0.2)];
     powerups = [];
     if (!keepLives) {
       lives = LIVES;
@@ -206,6 +207,20 @@ window.Steps["breakout"] = function (container, step, api) {
       ctx.fillText(p.type === "multi" ? "M" : p.type === "wide" ? "W" : "S", p.x, p.y + 1);
       ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
     });
+    // ohjausalue mailan alla: sormi restataan tanne, nakyva rajaviiva
+    var oz = PADDLE_Y + 18;
+    ctx.fillStyle = "rgba(226,180,106,.05)";
+    ctx.fillRect(0, oz, W, H - oz);
+    ctx.strokeStyle = "rgba(226,180,106,.3)";
+    ctx.setLineDash([4, 5]);
+    ctx.beginPath(); ctx.moveTo(0, oz); ctx.lineTo(W, oz); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = "rgba(233,231,224,.4)";
+    ctx.font = "10px monospace";
+    ctx.textAlign = "center";
+    ctx.fillText("- ohjausalue -", W / 2, H - 12);
+    ctx.textAlign = "left";
+
     ctx.fillStyle = "#e2b46a";
     ctx.fillRect(paddle.x, paddle.y, paddle.w, paddle.h);
     balls.forEach(function (b) {

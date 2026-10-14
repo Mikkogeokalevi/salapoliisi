@@ -14,7 +14,7 @@ window.Steps["flappy"] = function (container, step, api) {
   var status = U.statusLine(container, "Lennä " + GATES + " portin läpi - kosketa noustaaksesi");
 
   var W = Math.min(340, Math.floor(window.innerWidth * 0.88));
-  var H = Math.floor(W * 1.35);
+  var H = Math.min(Math.floor(W * 1.25), 430);
   var cv = U.canvas(container, W, H);
   var ctx = cv.ctx;
 

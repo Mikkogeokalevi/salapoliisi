@@ -16,7 +16,7 @@ window.Steps["maze"] = function (container, step, api) {
   var status = U.statusLine(container, "Etsi " + NKEYS + " avainta ja uloskaynti");
 
   var W = Math.min(360, Math.floor(window.innerWidth * 0.88));
-  var cell = Math.floor(W / COLS);
+  var cell = Math.floor(Math.min(W / COLS, 17));
   var H = cell * ROWS;
   var cv = U.canvas(container, W, H);
   var ctx = cv.ctx;
