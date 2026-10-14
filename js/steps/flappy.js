@@ -6,8 +6,8 @@ window.Steps["flappy"] = function (container, step, api) {
   var U = window.StepsUI;
   var P = step.params || {};
   var GATES = P.gates || 12;
-  var GAP = P.gap || 110;
-  var SPEED = P.speed || 2.6;
+  var GAP = P.gap || 125;
+  var SPEED = P.speed || 2.1;
 
   U.prompt(container, step.prompt);
   var g = U.game();
@@ -32,7 +32,7 @@ window.Steps["flappy"] = function (container, step, api) {
     if (dead) { reset(); return; }
     if (won) return;
     started = true;
-    bird.vy = -5.4;
+    bird.vy = -4.6;
     if (window.Audio) window.Audio.tick();
   }
 
@@ -41,12 +41,12 @@ window.Steps["flappy"] = function (container, step, api) {
   function tick(dt) {
     if (!started || dead || won) return;
     var f = dt / 16.7;
-    bird.vy += 0.32 * f;
+    bird.vy += 0.22 * f;
     bird.y += bird.vy * f;
 
     // putket
-    if (!pipes.length || pipes[pipes.length - 1].x < W - 150) {
-      var gh = GAP + Math.random() * 30;
+    if (!pipes.length || pipes[pipes.length - 1].x < W - 185) {
+      var gh = GAP + Math.random() * 25;
       var gy = 50 + Math.random() * (H - 100 - gh);
       pipes.push({ x: W + 20, gy: gy, gh: gh, scored: false });
     }

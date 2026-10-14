@@ -8,8 +8,8 @@ window.Steps["catch"] = function (container, step, api) {
   var P = step.params || {};
   var GOAL = P.catches || 12;
   var MAXMISS = P.maxMiss || 3;
-  var DROPMS = P.dropMs || 850;
-  var SPEED = P.speed || 3.0;
+  var DROPMS = P.dropMs || 620;
+  var SPEED = P.speed || 3.7;
 
   U.prompt(container, step.prompt);
   var g = U.game();
@@ -33,13 +33,16 @@ window.Steps["catch"] = function (container, step, api) {
 
   function spawn() {
     if (done || !g.alive()) return;
-    var isBomb = Math.random() < 0.22;
-    items.push({
-      x: 20 + Math.random() * (W - 40),
-      y: -16, r: 11,
-      bomb: isBomb,
-      vy: (SPEED + got * 0.12) * (0.9 + Math.random() * 0.3)
-    });
+    var count = Math.random() < 0.3 ? 2 : 1; // 30% tuplaputous
+    for (var k = 0; k < count; k++) {
+      var isBomb = Math.random() < 0.32;
+      items.push({
+        x: 20 + Math.random() * (W - 40),
+        y: -16 - k * 30, r: 11,
+        bomb: isBomb,
+        vy: (SPEED + got * 0.16) * (0.9 + Math.random() * 0.3)
+      });
+    }
   }
 
   function moveTo(clientX) {

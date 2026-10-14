@@ -6,7 +6,7 @@ window.Steps["stack"] = function (container, step, api) {
   var U = window.StepsUI;
   var P = step.params || {};
   var GOAL = P.blocks || 10;
-  var SPEED = (P.speed || 2.2);
+  var SPEED = (P.speed || 3.4);
 
   U.prompt(container, step.prompt);
   var g = U.game();
@@ -21,7 +21,7 @@ window.Steps["stack"] = function (container, step, api) {
   var tower, moving, dir, speed, done, dead;
 
   function reset() {
-    tower = [{ x: W / 2 - 60, w: 120 }];
+    tower = [{ x: W / 2 - 48, w: 96 }];
     moving = null;
     done = false; dead = false;
     speed = SPEED;
@@ -32,7 +32,7 @@ window.Steps["stack"] = function (container, step, api) {
     var prev = tower[tower.length - 1];
     moving = { x: -prev.w, w: prev.w, y: 0 };
     dir = 1;
-    speed = SPEED + tower.length * 0.25;
+    speed = SPEED + tower.length * 0.45;
   }
 
   function drop() {

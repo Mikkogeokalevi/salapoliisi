@@ -5,7 +5,7 @@ window.Steps["hanoi"] = function (container, step, api) {
   "use strict";
   var U = window.StepsUI;
   var P = step.params || {};
-  var DISKS = P.disks || 4;
+  var DISKS = P.disks || 5;
 
   U.prompt(container, step.prompt);
   var g = U.game();
