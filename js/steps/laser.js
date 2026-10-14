@@ -14,11 +14,13 @@ window.Steps["laser"] = function (container, step, api) {
   var U = window.StepsUI;
   var P = step.params || {};
   var LEVELS = P.levels || [
-    { size: 7,  turns: 4, decoys: 3 },
-    { size: 9,  turns: 6, decoys: 4, walls: 4, fixed: 2 },
-    { size: 11, stem: 3, branch: 2, decoys: 6, split: true },
-    { size: 11, stem: 4, branch: 2, decoys: 7, split: true, walls: 6, fixed: 3 },
-    { size: 13, stem: 3, branch: 3, decoys: 8, split: true, walls: 7, fixed: 3, colored: true }
+    { size: 9,  turns: 6, decoys: 5, walls: 4, fixed: 2 },
+    { size: 11, turns: 8, decoys: 7, walls: 6, fixed: 3 },
+    { size: 11, stem: 4, branch: 3, decoys: 8, split: true, walls: 5, fixed: 2 },
+    { size: 13, stem: 4, branch: 3, decoys: 9, split: true, walls: 7, fixed: 3 },
+    { size: 13, stem: 4, branch: 3, decoys: 9, split: true, walls: 7, fixed: 3, colored: true },
+    { size: 15, stem: 4, branch: 3, decoys: 11, split: true, walls: 9, fixed: 4, colored: true },
+    { size: 15, stem: 3, branch: 2, decoys: 11, split2: true, walls: 10, fixed: 5, colored: true }
   ];
   var FCYCLE = ["r", "g", "b"];
   var CMAP = { w: "#e8c05a", r: "#e05555", g: "#6fd597", b: "#5ec8e8" };
@@ -77,6 +79,24 @@ window.Steps["laser"] = function (container, step, api) {
       d = nd;
     }
     return { cur: cur, d: d, cells: cellsOut };
+  }
+
+  // Aseta sateenjakaja jalan loppuun: palauttaa {jr,jc,straight,ref} tai null.
+  function placeSplitter(cur, d, used, blocked) {
+    var max = 0, tr = cur[0], tc = cur[1];
+    while (inside(tr + d[0], tc + d[1]) && !blocked[key(tr + d[0], tc + d[1])]) {
+      tr += d[0]; tc += d[1]; max++;
+    }
+    if (max < 3) return null;
+    var s = 2 + Math.floor(Math.random() * Math.min(max - 1, 3));
+    var jr = cur[0] + d[0] * s, jc = cur[1] + d[1] * s;
+    if (used[key(jr, jc)] || blocked[key(jr, jc)]) return null;
+    for (var k = 1; k <= s; k++) used[key(cur[0] + d[0] * k, cur[1] + d[1] * k)] = true;
+    var so = Math.random() < 0.5 ? "/" : "\\";
+    var ref = reflect(so, d[0], d[1]);
+    mirrors.push({ r: jr, c: jc, need: so, o: so, split: true, fixed: false, filter: false });
+    blocked[key(jr, jc)] = true;
+    return { jr: jr, jc: jc, straight: d.slice(), ref: ref };
   }
 
   // Vastaanotin sinne minne sade osuu. color='w' = neutraali.
@@ -139,7 +159,7 @@ window.Steps["laser"] = function (container, step, api) {
   function gen() {
     var lv = LEVELS[li];
     N = lv.size;
-    for (var att = 0; att < 500; att++) {
+    for (var att = 0; att < 1000; att++) {
       mirrors = []; receivers = {}; walls = {};
       var used = {};
       var blocked = {}; // seinat + peilit + jakajat (ei suotimia)
@@ -159,40 +179,40 @@ window.Steps["laser"] = function (container, step, api) {
         blocked[wk] = true; used[wk] = true;
       }
 
-      var stem = lv.split ? (lv.stem || 3) : (lv.turns || 4);
+      var stem = (lv.split || lv.split2) ? (lv.stem || 3) : (lv.turns || 4);
       var res = buildLegs(stem, [r, 0], d, used, blocked);
       if (!res) continue;
       var cur = res.cur; d = res.d;
-      var stemCells = res.cells;
 
       var colorQueue = lv.colored ? FCYCLE.slice() : null;
+      function nextColor() { return colorQueue && colorQueue.length ? colorQueue.shift() : "w"; }
 
-      if (!lv.split) {
-        var col = colorQueue ? colorQueue[0] : "w";
-        if (!endAtReceiver(cur, d, blocked, used, col)) continue;
+      if (!lv.split && !lv.split2) {
+        if (!endAtReceiver(cur, d, blocked, used, nextColor())) continue;
+      } else if (lv.split2) {
+        // kaksi jakajaa: toinen haara jakautuu edelleen -> 3 maalia
+        var sp1 = placeSplitter(cur, d, used, blocked);
+        if (!sp1) continue;
+        var hA = buildLegs(lv.branch || 2, [sp1.jr, sp1.jc], sp1.straight, used, blocked);
+        var hB = buildLegs(lv.branch || 2, [sp1.jr, sp1.jc], sp1.ref, used, blocked);
+        if (!hA || !hB) continue;
+        var sp2 = placeSplitter(hA.cur, hA.d, used, blocked);
+        if (!sp2) continue;
+        var hA1 = buildLegs(lv.branch || 2, [sp2.jr, sp2.jc], sp2.straight, used, blocked);
+        var hA2 = buildLegs(lv.branch || 2, [sp2.jr, sp2.jc], sp2.ref, used, blocked);
+        if (!hA1 || !hA2) continue;
+        if (!endAtReceiver(hA1.cur, hA1.d, blocked, used, nextColor())) continue;
+        if (!endAtReceiver(hA2.cur, hA2.d, blocked, used, nextColor())) continue;
+        if (!endAtReceiver(hB.cur, hB.d, blocked, used, nextColor())) continue;
+        if (Object.keys(receivers).length < 3) continue;
       } else {
-        var max = 0, tr = cur[0], tc = cur[1];
-        while (inside(tr + d[0], tc + d[1]) && !blocked[key(tr + d[0], tc + d[1])]) {
-          tr += d[0]; tc += d[1]; max++;
-        }
-        if (max < 3) continue;
-        var s = 2 + Math.floor(Math.random() * Math.min(max - 1, 3));
-        var jr = cur[0] + d[0] * s, jc = cur[1] + d[1] * s;
-        if (used[key(jr, jc)] || blocked[key(jr, jc)]) continue;
-        for (var k = 1; k <= s; k++) used[key(cur[0] + d[0] * k, cur[1] + d[1] * k)] = true;
-        var so = Math.random() < 0.5 ? "/" : "\\";
-        var ref = reflect(so, d[0], d[1]);
-        mirrors.push({ r: jr, c: jc, need: so, o: so, split: true, fixed: false, filter: false });
-        blocked[key(jr, jc)] = true;
-
-        var bA = buildLegs(lv.branch || 2, [jr, jc], d.slice(), used, blocked);
-        var bB = buildLegs(lv.branch || 2, [jr, jc], ref.slice(), used, blocked);
+        var sp = placeSplitter(cur, d, used, blocked);
+        if (!sp) continue;
+        var bA = buildLegs(lv.branch || 2, [sp.jr, sp.jc], sp.straight, used, blocked);
+        var bB = buildLegs(lv.branch || 2, [sp.jr, sp.jc], sp.ref, used, blocked);
         if (!bA || !bB) continue;
-        var cA = colorQueue ? colorQueue[0] : "w";
-        var cB = colorQueue ? (colorQueue[1] || "g") : "w";
-        var cellsA = endAtReceiver(bA.cur, bA.d, blocked, used, cA);
-        var cellsB = endAtReceiver(bB.cur, bB.d, blocked, used, cB);
-        if (!cellsA || !cellsB) continue;
+        if (!endAtReceiver(bA.cur, bA.d, blocked, used, nextColor())) continue;
+        if (!endAtReceiver(bB.cur, bB.d, blocked, used, nextColor())) continue;
         if (Object.keys(receivers).length < 2) continue;
       }
 
@@ -431,7 +451,7 @@ window.Steps["laser"] = function (container, step, api) {
     setupCanvas();
     var lv = LEVELS[li];
     status.set("TASO " + (li + 1) + " / " + LEVELS.length +
-      (lv.split ? " · jakaja: kaikki maalit osuttava" : " - johdata säde maaliin") +
+      ((lv.split || lv.split2) ? " · jakaja: kaikki maalit osuttava" : " - johdata säde maaliin") +
       (lv.colored ? " · värit!" : ""));
     draw();
   }
