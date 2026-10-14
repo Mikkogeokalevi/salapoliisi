@@ -1,16 +1,19 @@
-// Pulmatyyppi: maze - generoitu labyrintti, etsi uloskaynti.
-// params: { cols: 11, rows: 15 } (pariton luku suositeltu)
+// Pulmatyyppi: maze - PIMEA pakoreitti. Naet vain muutaman ruudun
+// ymparillesi (taskulamppu). Loyda N avainta, jotka avaavat uloskaynnin.
+// params: { cols: 11, rows: 15, keys: 3, sight: 2 } (pariton luku suositeltu)
 // guess = "reitti" + cols + "x" + rows
 window.Steps["maze"] = function (container, step, api) {
   "use strict";
   var U = window.StepsUI;
   var P = step.params || {};
-  var COLS = (P.cols || 11) | 1; // pariton
+  var COLS = (P.cols || 11) | 1;
   var ROWS = (P.rows || 15) | 1;
+  var NKEYS = P.keys || 3;
+  var SIGHT = P.sight != null ? P.sight : 2;
 
   U.prompt(container, step.prompt);
   var g = U.game();
-  var status = U.statusLine(container, "Etsi uloskäynti labyrintistä");
+  var status = U.statusLine(container, "Etsi " + NKEYS + " avainta ja uloskaynti");
 
   var W = Math.min(360, Math.floor(window.innerWidth * 0.88));
   var cell = Math.floor(W / COLS);
@@ -18,8 +21,7 @@ window.Steps["maze"] = function (container, step, api) {
   var cv = U.canvas(container, W, H);
   var ctx = cv.ctx;
 
-  // Generointi: rekursiivinen takaisinperaytyminen, walls[r][c]
-  var walls = []; // true = seina
+  var walls = [];
   for (var r = 0; r < ROWS; r++) { walls.push([]); for (var c = 0; c < COLS; c++) walls[r][c] = true; }
 
   function gen() {
@@ -38,10 +40,43 @@ window.Steps["maze"] = function (container, step, api) {
       walls[cur[0] + d[0]][cur[1] + d[1]] = false;
       stack.push([cur[0] + d[0], cur[1] + d[1]]);
     }
-    walls[ROWS - 2][COLS - 1] = false; // uloskaynti oikealle alhaalta
+    walls[ROWS - 2][COLS - 1] = false; // uloskaynti
   }
 
-  var px = 1, py = 1, done = false, moves = 0;
+  // Avaimet: etaisimmilla soluilla (kauimpana alkupisteesta, BFS)
+  var keys = [];
+  function placeKeys() {
+    var dist = []; var q = [[1, 1]];
+    for (var r = 0; r < ROWS; r++) dist.push(new Array(COLS).fill(-1));
+    dist[1][1] = 0;
+    while (q.length) {
+      var cur = q.shift();
+      [[0,1],[0,-1],[1,0],[-1,0]].forEach(function (d) {
+        var nr = cur[0] + d[0], nc = cur[1] + d[1];
+        if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS &&
+            !walls[nr][nc] && dist[nr][nc] === -1) {
+          dist[nr][nc] = dist[cur[0]][cur[1]] + 1;
+          q.push([nr, nc]);
+        }
+      });
+    }
+    var cells = [];
+    for (var r = 1; r < ROWS - 1; r++)
+      for (var c = 1; c < COLS - 1; c++)
+        if (!walls[r][c] && dist[r][c] > 6 &&
+            !(r === ROWS - 2 && c === COLS - 1)) cells.push({ r: r, c: c, d: dist[r][c] });
+    cells.sort(function (a, b) { return b.d - a.d; });
+    var used = [[1, 1]];
+    for (var i = 0; i < cells.length && keys.length < NKEYS; i++) {
+      var cand = cells[i];
+      var far = used.every(function (u) {
+        return Math.abs(u[0] - cand.r) + Math.abs(u[1] - cand.c) > 6;
+      });
+      if (far) { keys.push(cand); used.push([cand.r, cand.c]); }
+    }
+  }
+
+  var px = 1, py = 1, found = 0, done = false, moves = 0;
 
   function tryMove(dr, dc) {
     if (done) return;
@@ -50,32 +85,67 @@ window.Steps["maze"] = function (container, step, api) {
     px = nc; py = nr;
     moves++;
     if (window.Audio) window.Audio.tick();
+    // avain?
+    keys = keys.filter(function (k) {
+      if (k.r === py && k.c === px) {
+        found++;
+        if (window.Audio) window.Audio.click();
+        status.set("Avain! " + found + " / " + NKEYS + " - jatka etsimista");
+        return false;
+      }
+      return true;
+    });
+    // uloskaynti
     if (py === ROWS - 2 && px === COLS - 1) {
-      done = true;
-      status.set("Ulos! " + moves + " askelta");
-      if (window.Audio) window.Audio.success();
-      submit("reitti" + COLS + "x" + ROWS);
+      if (found >= NKEYS) {
+        done = true;
+        status.set("Ulos! " + moves + " askelta, " + found + " avainta");
+        if (window.Audio) window.Audio.success();
+        submit("reitti" + COLS + "x" + ROWS);
+      } else {
+        status.set("LUKITTU - puuttuu " + (NKEYS - found) + " avainta");
+        if (window.Audio) window.Audio.error();
+      }
     }
   }
 
   function draw() {
-    ctx.fillStyle = "#0c1119";
+    ctx.fillStyle = "#05080e";
     ctx.fillRect(0, 0, W, H);
     for (var r = 0; r < ROWS; r++) {
       for (var c = 0; c < COLS; c++) {
+        var d = Math.abs(r - py) + Math.abs(c - px);
+        if (d > SIGHT) continue; // pimeys
+        var fade = d === SIGHT ? .45 : 1;
         if (walls[r][c]) {
-          ctx.fillStyle = "#26324a";
+          ctx.fillStyle = "rgba(38,50,74," + fade + ")";
+          ctx.fillRect(c * cell, r * cell, cell - 1, cell - 1);
+        } else {
+          ctx.fillStyle = "rgba(18,25,39," + fade + ")";
           ctx.fillRect(c * cell, r * cell, cell - 1, cell - 1);
         }
       }
     }
-    // maali
-    ctx.fillStyle = "#e2b46a";
-    ctx.fillRect((COLS - 1) * cell, (ROWS - 2) * cell, cell, cell);
-    // pelaaja
+    // avaimet nakyvissa
+    keys.forEach(function (k) {
+      var d = Math.abs(k.r - py) + Math.abs(k.c - px);
+      if (d > SIGHT) return;
+      ctx.fillStyle = "#e2b46a";
+      ctx.font = Math.floor(cell * .7) + "px serif";
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText("⚿", k.c * cell + cell / 2, k.r * cell + cell / 2 + 1);
+      ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+    });
+    // uloskaynti
+    var ed = Math.abs(ROWS - 2 - py) + Math.abs(COLS - 1 - px);
+    if (ed <= SIGHT) {
+      ctx.fillStyle = found >= NKEYS ? "#6fd597" : "#8a6c3e";
+      ctx.fillRect((COLS - 1) * cell + 1, (ROWS - 2) * cell + 1, cell - 2, cell - 2);
+    }
+    // pelaaja + halo
     ctx.fillStyle = "#6fd597";
     ctx.beginPath();
-    ctx.arc(px * cell + cell / 2, py * cell + cell / 2, cell * 0.32, 0, 7);
+    ctx.arc(px * cell + cell / 2, py * cell + cell / 2, cell * .32, 0, 7);
     ctx.fill();
   }
 
@@ -92,6 +162,7 @@ window.Steps["maze"] = function (container, step, api) {
   U.hint(container, api);
 
   gen();
+  placeKeys();
   draw();
   return g.cleanup;
 };
