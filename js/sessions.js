@@ -42,6 +42,17 @@
   $("f-nick").addEventListener("input", render);
   $("f-status").addEventListener("change", render);
 
+  // Välilehdet
+  document.querySelectorAll(".tab").forEach(function (t) {
+    t.addEventListener("click", function () {
+      document.querySelectorAll(".tab").forEach(function (x) { x.classList.remove("on"); });
+      t.classList.add("on");
+      ["tab-sess", "tab-finals", "tab-wrong"].forEach(function (id) {
+        $(id).style.display = id === t.dataset.tab ? "block" : "none";
+      });
+    });
+  });
+
   function fmtTs(ts) {
     if (!ts || !ts.toDate) return "-";
     var d = ts.toDate();
@@ -56,6 +67,7 @@
         allSessions = qs.docs.map(function (d) {
           return Object.assign({ uid: d.id }, d.data());
         });
+        $("n-sess").textContent = allSessions.length || "";
         wrongAgg = {};
         return Promise.all(allSessions.map(function (s) {
           return db().collection("sessions").doc(s.uid)
@@ -157,6 +169,7 @@
           .sort(function (a, b) {
             return (a.at ? a.at.toMillis() : 0) - (b.at ? b.at.toMillis() : 0);
           });
+        $("n-finals").textContent = rows.length || "";
         if (!rows.length) {
           tb.innerHTML = '<tr><td colspan="5" class="muted">Ei vielä ratkaisijoita.</td></tr>';
           return;

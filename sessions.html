@@ -32,34 +32,43 @@
     </nav>
   </div>
 
-  <div class="row" style="margin-bottom:1rem">
-    <input class="input grow" id="f-nick" placeholder="Suodata nimimerkilla...">
-    <select class="input" id="f-status" style="width:auto">
-      <option value="">Kaikki</option>
-      <option value="done">Valmiit</option>
-      <option value="open">Kesken</option>
-    </select>
+  <div class="tabbar">
+    <button class="tab on" data-tab="tab-sess">SESSIOT <span class="tab-n" id="n-sess"></span></button>
+    <button class="tab" data-tab="tab-finals">RATKAISSEET <span class="tab-n" id="n-finals"></span></button>
+    <button class="tab" data-tab="tab-wrong">VÄÄRÄT ARVAILUT</button>
   </div>
 
-  <h2>Sessiot</h2>
-  <table class="data" id="sess-table">
-    <thead><tr><th>Nimimerkki</th><th>Edistys</th><th>Vihjeet</th><th>Aloitettu</th><th>Tila</th><th></th></tr></thead>
-    <tbody></tbody>
-  </table>
+  <div id="tab-sess">
+    <div class="row" style="margin-bottom:1rem">
+      <input class="input grow" id="f-nick" placeholder="Suodata nimimerkilla...">
+      <select class="input" id="f-status" style="width:auto">
+        <option value="">Kaikki</option>
+        <option value="done">Valmiit</option>
+        <option value="open">Kesken</option>
+      </select>
+    </div>
 
-  <h2>Mysteerin ratkaisseet</h2>
-  <table class="data" id="finals-table">
-    <thead><tr><th>#</th><th>Nimimerkki</th><th>Loppukoodi kirjattu</th><th>Sessio aloitettu</th><th>Kestoa</th></tr></thead>
-    <tbody><tr><td colspan="5" class="muted">Ladataan...</td></tr></tbody>
-  </table>
+    <table class="data" id="sess-table">
+      <thead><tr><th>Nimimerkki</th><th>Edistys</th><th>Vihjeet</th><th>Aloitettu</th><th>Tila</th><th></th></tr></thead>
+      <tbody></tbody>
+    </table>
 
-  <div id="detail" style="display:none">
-    <h2 id="detail-title">Session tiedot</h2>
-    <div id="detail-body"></div>
+    <div id="detail" style="display:none">
+      <h2 id="detail-title">Session tiedot</h2>
+      <div id="detail-body"></div>
+    </div>
   </div>
 
-  <h2>Väärät vastaukset / vaihe (yhteenveto)</h2>
-  <div class="card" id="agg"><span class="muted">Ladataan...</span></div>
+  <div id="tab-finals" style="display:none">
+    <table class="data" id="finals-table">
+      <thead><tr><th>#</th><th>Nimimerkki</th><th>Loppukoodi kirjattu</th><th>Sessio aloitettu</th><th>Kestoa</th></tr></thead>
+      <tbody><tr><td colspan="5" class="muted">Ladataan...</td></tr></tbody>
+    </table>
+  </div>
+
+  <div id="tab-wrong" style="display:none">
+    <div class="card" id="agg"><span class="muted">Ladataan...</span></div>
+  </div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
