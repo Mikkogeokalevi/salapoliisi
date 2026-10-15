@@ -249,12 +249,13 @@
       return;
     }
     Story.runMessages([
-      "Kaikki todisteet on ratkaistu. Erinomaista työtä.",
-      "Kokoa koodinpalat yhdeksi kokonaisuudeksi ja syötä lopullinen koodi."
+      "Kaikki todisteet on ratkaistu. Erinomaista työtä, {nimi}.",
+      "Sinulla on nyt kymmenen koodinpalaa — yksi koodi.",
+      "Kirjoita tehtävien aikana saamasi koodi."
     ]).then(function () {
       inputMode = "final";
       inputbar.style.display = "flex";
-      mainInput.placeholder = "Loppukoodi...";
+      mainInput.placeholder = "Koodi...";
       mainInput.focus();
     });
   }

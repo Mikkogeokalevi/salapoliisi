@@ -124,7 +124,7 @@
 
   Story.reward = function (text, codePart) {
     var b = addMsg("reward");
-    b.textContent = text;
+    b.textContent = subst(text);
     if (codePart) {
       var cp = document.createElement("span");
       cp.className = "code-part";
