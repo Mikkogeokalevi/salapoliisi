@@ -72,6 +72,7 @@
       }).then(function () {
         render();
         renderAgg();
+        loadFinals();
       }).catch(function (e) {
         $("sess-table").querySelector("tbody").innerHTML =
           '<tr><td colspan="6"><div class="notice err">Lataus epaonnistui: ' +
@@ -135,6 +136,53 @@
         body.innerHTML = html + "</tbody></table>";
       });
     $("detail").scrollIntoView({ behavior: "smooth" });
+  }
+
+  // --- Ratkaisseet (solved.*_final) ----------------------------------
+  function fmtDur(ms) {
+    if (!ms || ms < 0) return "-";
+    var m = Math.round(ms / 60000);
+    if (m < 60) return m + " min";
+    var h = Math.floor(m / 60);
+    return h + " h " + (m % 60) + " min";
+  }
+
+  function loadFinals() {
+    var tb = $("finals-table").querySelector("tbody");
+    // Haetaan kaikki ja suodatetaan selaimessa - ei indeksivaatimusta
+    db().collection("solved").get()
+      .then(function (qs) {
+        var rows = qs.docs.map(function (d) { return d.data(); })
+          .filter(function (r) { return r.step === "final"; })
+          .sort(function (a, b) {
+            return (a.at ? a.at.toMillis() : 0) - (b.at ? b.at.toMillis() : 0);
+          });
+        if (!rows.length) {
+          tb.innerHTML = '<tr><td colspan="5" class="muted">Ei vielä ratkaisijoita.</td></tr>';
+          return;
+        }
+        tb.innerHTML = "";
+        var byUid = {};
+        allSessions.forEach(function (s) { byUid[s.uid] = s; });
+        rows.forEach(function (r, i) {
+          var r = d.data();
+          var sess = byUid[r.uid] || {};
+          var tr = document.createElement("tr");
+          var dur = (r.at && sess.createdAt)
+            ? fmtDur(r.at.toMillis() - sess.createdAt.toMillis()) : "-";
+          tr.innerHTML =
+            "<td>" + (i + 1) + "</td>" +
+            "<td><b>" + (sess.nickname || r.uid.slice(0, 8) + "…") + "</b></td>" +
+            "<td class='muted'>" + fmtTs(r.at) + "</td>" +
+            "<td class='muted'>" + fmtTs(sess.createdAt) + "</td>" +
+            "<td>" + dur + "</td>";
+          tb.appendChild(tr);
+        });
+      })
+      .catch(function (e) {
+        tb.innerHTML = '<tr><td colspan="5"><div class="notice err">' +
+          "Lataus epäonnistui: " + e.message + "</div></td></tr>";
+      });
   }
 
   function renderAgg() {
