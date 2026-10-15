@@ -7,8 +7,8 @@
 <title>Mikkokalevin salapoliisitoimisto</title>
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="stylesheet" href="css/base.css?v=20251015f">
-<link rel="stylesheet" href="css/game.css?v=20251015f">
+<link rel="stylesheet" href="css/base.css?v=20251015g">
+<link rel="stylesheet" href="css/game.css?v=20251015g">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -61,37 +61,37 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
-<script src="js/config.js?v=20251015f"></script>
-<script src="js/firebase-init.js?v=20251015f"></script>
-<script src="js/audio.js?v=20251015f"></script>
-<script src="js/engine.js?v=20251015f"></script>
-<script src="js/story.js?v=20251015f"></script>
-<script src="js/steps/common.js?v=20251015f"></script>
-<script src="js/steps/text.js?v=20251015f"></script>
-<script src="js/steps/coords.js?v=20251015f"></script>
-<script src="js/steps/lock.js?v=20251015f"></script>
-<script src="js/steps/cipher.js?v=20251015f"></script>
-<script src="js/steps/morse.js?v=20251015f"></script>
-<script src="js/steps/wires.js?v=20251015f"></script>
-<script src="js/steps/sequence.js?v=20251015f"></script>
-<script src="js/steps/order.js?v=20251015f"></script>
-<script src="js/steps/grid.js?v=20251015f"></script>
-<script src="js/steps/mapClick.js?v=20251015f"></script>
-<script src="js/steps/snake.js?v=20251015f"></script>
-<script src="js/steps/breakout.js?v=20251015f"></script>
-<script src="js/steps/runner.js?v=20251015f"></script>
-<script src="js/steps/memory.js?v=20251015f"></script>
-<script src="js/steps/slider15.js?v=20251015f"></script>
-<script src="js/steps/mastermind.js?v=20251015f"></script>
-<script src="js/steps/targets.js?v=20251015f"></script>
-<script src="js/steps/catch.js?v=20251015f"></script>
-<script src="js/steps/stack.js?v=20251015f"></script>
-<script src="js/steps/maze.js?v=20251015f"></script>
-<script src="js/steps/mines.js?v=20251015f"></script>
-<script src="js/steps/flappy.js?v=20251015f"></script>
-<script src="js/steps/hanoi.js?v=20251015f"></script>
-<script src="js/steps/range.js?v=20251015f"></script>
-<script src="js/steps/laser.js?v=20251015f"></script>
+<script src="js/config.js?v=20251015g"></script>
+<script src="js/firebase-init.js?v=20251015g"></script>
+<script src="js/audio.js?v=20251015g"></script>
+<script src="js/engine.js?v=20251015g"></script>
+<script src="js/story.js?v=20251015g"></script>
+<script src="js/steps/common.js?v=20251015g"></script>
+<script src="js/steps/text.js?v=20251015g"></script>
+<script src="js/steps/coords.js?v=20251015g"></script>
+<script src="js/steps/lock.js?v=20251015g"></script>
+<script src="js/steps/cipher.js?v=20251015g"></script>
+<script src="js/steps/morse.js?v=20251015g"></script>
+<script src="js/steps/wires.js?v=20251015g"></script>
+<script src="js/steps/sequence.js?v=20251015g"></script>
+<script src="js/steps/order.js?v=20251015g"></script>
+<script src="js/steps/grid.js?v=20251015g"></script>
+<script src="js/steps/mapClick.js?v=20251015g"></script>
+<script src="js/steps/snake.js?v=20251015g"></script>
+<script src="js/steps/breakout.js?v=20251015g"></script>
+<script src="js/steps/runner.js?v=20251015g"></script>
+<script src="js/steps/memory.js?v=20251015g"></script>
+<script src="js/steps/slider15.js?v=20251015g"></script>
+<script src="js/steps/mastermind.js?v=20251015g"></script>
+<script src="js/steps/targets.js?v=20251015g"></script>
+<script src="js/steps/catch.js?v=20251015g"></script>
+<script src="js/steps/stack.js?v=20251015g"></script>
+<script src="js/steps/maze.js?v=20251015g"></script>
+<script src="js/steps/mines.js?v=20251015g"></script>
+<script src="js/steps/flappy.js?v=20251015g"></script>
+<script src="js/steps/hanoi.js?v=20251015g"></script>
+<script src="js/steps/range.js?v=20251015g"></script>
+<script src="js/steps/laser.js?v=20251015g"></script>
 
 <script>
 (function () {
@@ -131,16 +131,35 @@
     "> Kanava auki. Tervetuloa, tutkija."
   ];
 
+  var BOOT_PROGRESS_MS = 6000; // prosenttilaskurin kesto
+
   function runBoot(done) {
     var box = $("boot-lines");
     var i = 0;
+    function finish() {
+      bootEl.style.transition = "opacity .5s";
+      bootEl.style.opacity = "0";
+      setTimeout(function () { bootEl.style.display = "none"; done(); }, 520);
+    }
+    function progress() {
+      var d = document.createElement("div");
+      d.className = "boot-line cursor";
+      d.textContent = "> Ladataan ohjelmat valmiiksi... 0%";
+      box.appendChild(d);
+      var start = Date.now();
+      var iv = setInterval(function () {
+        var p = Math.min(100, Math.floor((Date.now() - start) / BOOT_PROGRESS_MS * 100));
+        d.textContent = "> Ladataan ohjelmat valmiiksi... " + p + "%";
+        if (p >= 100) {
+          clearInterval(iv);
+          d.textContent = "> Ladataan ohjelmat valmiiksi... 100% — VALMIS";
+          setTimeout(finish, 700);
+        }
+      }, 60);
+    }
     function next() {
       if (i >= BOOT_LINES.length) {
-        setTimeout(function () {
-          bootEl.style.transition = "opacity .5s";
-          bootEl.style.opacity = "0";
-          setTimeout(function () { bootEl.style.display = "none"; done(); }, 520);
-        }, 500);
+        setTimeout(progress, 600);
         return;
       }
       var d = document.createElement("div");
