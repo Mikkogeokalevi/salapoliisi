@@ -1,0 +1,391 @@
+MIKKOKALEVIN SALAPOLIISITOIMISTO - KAIKKI NÄKYVÄT TEKSTIT
+Oikolukuversio: muokkaa vapaasti, palauta tiedosto – vien tekstit paikoilleen.
+======================================================================
+
+### YLEINEN KÄYTTÖLIITTYMÄ (index.html / story.js) ###
+
+[header.logo] MIKKOKALEVIN SALAPOLIISITOIMISTO
+[boot.logo] SALAPOLIISITOIMISTO
+[system] SALAPOLIISIKANAVA AVATTU
+[input.placeholder] Vastaus...
+[button.todisteet] TODISTEET
+[button.aani] ÄÄNI
+[sheet.title] TEHTÄVÄ
+[taskcard.tag] SAAPUNUT TODISTE
+[taskcard.button] Avaa tehtävä
+[system.solve] ✓ TODISTE RATKAISTU
+[handler.codepart] Sait koodinpalan "{PALA}". Kirjaa se ylös – tarvitset kaikkia paloja loppukoodiin.
+[board.title] TODISTELOKI
+[board.reset] ALOITA ALUSTA (menetät edistymisen)
+[board.reset.confirm] Poistetaan koko edistymisesi ja aloitetaan peli alusta. Oletko varma?
+[system.wrong] Väärä koodi. Tarkista koodinpalat.
+[system.solved] TAPAUS RATKAISTU
+
+======================================================================
+VAIHE 1: Ampumarata  (id: step_01, tyyppi: range)
+======================================================================
+[title] Ampumarata
+[promptShort] Ammu maalit – vältä siviilejä.
+[prompt] KOULUTUSOHJELMA 1: TARKKUUS. Maalit pomppaavat esiin rajatuksi ajaksi. <b>Punainen maalitaulu = ammu</b>. <b>Sininen siviili = älä ammu</b>. Tyhjään ruutuun ampuminen = huti. Tavoite: <b>15 osumaa</b>, enintään 3 hutia.
+
+-- TARINA (story) --
+  story[0] (viesti): Taustaa tehtävästäsi: professori Kaarle Salmi, vuonna 1947 syntynyt insinööri, oli kaupungin omintakeisin arkkitehti – ei rakennusten, vaan salaisuuksien.
+  story[1] (viesti): Hän rakensi koko uransa ajan koulutusohjelmia, joilla kenttäagentteja testattiin tarkkuuteen, muistiin ja kylmäpäisyyteen. Sitten hän katosi – ja jätti muistionsa jälkeensä.
+  story[2] (viesti): Muistion viimeisellä sivulla lukee: "Vain se, joka läpäisee kaikki kymmenen ohjelmaani, ansaitsee lopullisen koodin."
+  story[3] (viesti): Jokainen läpäisty ohjelma paljastaa KOODINPALAN. Kymmenen palaa – yksi lopullinen koodi, joka johtaa kätkölle.
+  story[4] GATE.kysymys: SALASSAPITOSOPIMUS: Sitoudutko siihen, että et jaa loppuratkaisua tai vaiheiden ratkaisuja suoraan muille pelaajille? Jokaisen on ansaittava ratkaisu itse. Vastaa KYLLÄ jatkaaksesi.
+  story[4] GATE.confirm: Sopimus kirjattu, {nimi}. Tervetuloa joukkoon.
+  story[4] GATE.deny: Ilman salassapitositoumusta tutkintaa ei voida jakaa. Kysyn uudelleen:
+  story[4] GATE.accept: kyllä, kyllä, joo, yes, sitoudun, hyväksyn, hyväksyn
+  story[5] ASK.kysymys: Oletko valmis aloittamaan, {nimi}?
+  story[5] ASK.respond: Hyvä – mennään, {nimi}. | Sitten menoksi, {nimi}.
+  story[6] CHAT.aloitus: Voit vielä kysyä minulta vapaasti – tapauksesta, Salmesta tai mistä tahansa. Kirjoita 'jatka' kun olet valmis.
+  story[6] CHAT.more: Kysy vielä jotain – tai kirjoita 'jatka'.
+  story[6] CHAT.bye: Hyvä. Ensimmäinen ohjelma odottaa.
+  story[6] CHAT.default: Mielenkiintoista – muistio saattaa vastata siihen myöhemmin. | Palaamme tähän – ohjelma odottaa. | Hyvä kysymys, {nimi} – mutta nyt tehtävät kutsuvat.
+  story[6] CHAT.reply[salmi|professori]: Kaarle Salmi, syntynyt 1947. Kaupungin nerokkain salaisuuksien rakentaja – katosi ja jätti muistionsa meille.
+  story[6] CHAT.reply[kuka|mikkokalevi|sinä|sina]: Olen Mikkokalevi – tämän salapoliisitoimiston johtaja. Sinä, {nimi}, olet uusi kenttäagenttimme.
+  story[6] CHAT.reply[koodi|pala]: Jokainen läpäisty ohjelma antaa koodinpalan. Kymmenen palaa = loppukoodi = kätkön sijainti.
+  story[6] CHAT.reply[kätkö|missä|maali]: Sehän on se iso kysymys. Salmi piilotti sen – ohjelmat paljastavat reitin pala kerrallaan.
+  story[6] CHAT.reply[vihje|apu]: Jos jäät jumiin, tehtävän Vihje-nappi auttaa. Sitä ei ole häpeä käyttää.
+  story[6] CHAT.reply[ammunt|maali|tarkkuu]: Ensimmäinen ohjelma mittaa tarkkuuttasi. Punainen osuu – sininen ei saa. Älä räiski.
+  story[6] CHAT.reply[hinta|maksaa|palkka]: Palkkasi on löydös – ja toimiston kunniakirja.
+  story[6] CHAT.reply[pelotta|pelko|vaikea]: Ei pelottavaa – vain Salmen ohjelmia. Maltti voittaa.
+
+-- VIHJEET (hints) --
+  hint[0]: Punainen maalitaulu haalistuu kun aika loppuu – ammu se ennen sitä.
+  hint[1]: Sininen siviili saa kadota rauhassa – älä koske siihen.
+  hint[2]: Älä räiski – jokainen tyhjä laukaus on huti.
+
+-- RATKAISU (solutions - EI ole näkyvä, mutta vaikuttaa) --
+  answers: osumat15
+-- REWARD --
+  codePart: K
+  revealText: Rata läpäisty – ohjelma tunnisti tarkkuutesi.
+
+======================================================================
+VAIHE 2: Sekvenssiohjelma  (id: step_02, tyyppi: sequence)
+======================================================================
+[title] Sekvenssiohjelma
+[promptShort] Toista kasvava signaalisarja.
+[prompt] Sekvenssiohjelma toistaa sarjan valoilla ja äänillä. Sarja alkaa <b>2 askeleella</b> ja kasvaa aina yhdellä – kunnes toistat kaikki <b>15 askelta</b> oikein.
+
+-- TARINA (story) --
+  story[0] (viesti): Ensimmäinen testi takana – hyvä alku.
+  story[1] (viesti): Salmi oli pakkomielteinen muistinsa suhteen. Muistionsa marginaalissa lukee: "Muisti on ainoa aarre, jota ei voi varastaa."
+  story[2] (viesti): Sekvenssiohjelma alkaa lyhyestä ja kasvaa jokaisella kierroksella. Älä aliarvioi viimeisiä vaiheita.
+  story[3] ASK.kysymys: Onko muistisi terässä, {nimi}?
+  story[3] ASK.respond: Näytetään sitten. | Sopii – uskon, että selviät.
+
+-- VIHJEET (hints) --
+  hint[0]: Kirjoita sarja ylös numeroina 1–4 sitä mukaa kun se kasvaa.
+  hint[1]: Sarja alkaa: punainen, vihreä, sininen...
+
+-- RATKAISU (solutions - EI ole näkyvä, mutta vaikuttaa) --
+  answers: 021320312313020
+-- REWARD --
+  codePart: A
+  revealText: Sekvenssi muistettu. Professori koulutti meitä.
+
+======================================================================
+VAIHE 3: Signaalinseuranta  (id: step_03, tyyppi: snake)
+======================================================================
+[title] Signaalinseuranta
+[promptShort] Kerää 12 omenaa – varo pommeja.
+[prompt] Seurantaohjelma: mato seuraa kohdesignaalia. Kerää <b>12 omenaa</b>. Reunat ovat läpäiseviä – mutta omaan itseen tai <b>pommiin</b> osuminen lopettaa pelin.
+
+-- TARINA (story) --
+  story[0] (viesti): Sekvenssi selvä. Salmi olisi pitänyt sinusta – hän ihaili tarkkuutta.
+  story[1] (viesti): Seuraava on seurantasimulaattori, jolla agentit harjoittelivat kohteen seuraamista kadottamatta häntä.
+  story[2] (viesti): Tällä kertaa reunat ovat läpäiseviä – hyödynnä se. Ja varo pommeja: ne sytytetään hetkeksi kerrallaan.
+  story[3] CHAT.aloitus: Kysy vapaasti – simulaattorista tai tapauksesta. 'jatka' kun olet valmis.
+  story[3] CHAT.more: Jotain muuta? – tai 'jatka'.
+  story[3] CHAT.bye: Keskity nyt. Mato odottaa.
+  story[3] CHAT.default: Keskity omenoihin – loput selviävät myöhemmin. | Hyvä kysymys, {nimi}. Pidä se mielessä. | Vastaan tähän paremmin myöhemmin – nyt mennään.
+  story[3] CHAT.reply[mato|omena|signaal]: Mato seuraa omenasignaalia – sinä ohjaat. 12 omenaa ja taso on selvä.
+  story[3] CHAT.reply[pommi]: Pommit vilkkuvat hetken ja katoavat – mutta älä osu niihin.
+  story[3] CHAT.reply[reuna]: Reunat läpäisevät: vasemmalta ulos = oikealta sisään. Hyödynnä sitä.
+  story[3] CHAT.reply[salmi]: Salmi rakensi tämän seurannan koealustaksi – hän arvosti malttia.
+  story[3] CHAT.reply[koodi|pala]: Tästä ohjelmasta saat toisen koodinpalan.
+  story[3] CHAT.reply[vihje|apu]: Tehtävän Vihje-nappi avaa apua, jos jumiudut.
+
+-- VIHJEET (hints) --
+  hint[0]: Reunat läpäisevät – käytä sitä hyväksi.
+  hint[1]: Pommi vilkkuu ennen katoamistaan.
+
+-- RATKAISU (solutions - EI ole näkyvä, mutta vaikuttaa) --
+  answers: omena12
+-- REWARD --
+  codePart: A
+  revealText: Kohdesignaalit seurattu. Jokin salaisuus paljastui.
+
+======================================================================
+VAIHE 4: Peilirele  (id: step_04, tyyppi: laser)
+======================================================================
+[title] Peilirele
+[promptShort] Käännä peilit – johdata säde perille.
+[prompt] Salmen salainen optinen rele, <b>7 tasoa</b>: napauta peilejä kääntääksesi niiden suuntaa. <b>Violetti jakaja</b> jakaa säteen kahteen haaraan – kaikki maalit on osuttava. <b>Tumma peili ×</b> on kiinteä – ei käänny. <b>Harmaa seinä</b> pysäyttää säteen. <b>Värilliset ruudut</b> ovat suotimia – <b>napauta suodinta kierrättääksesi sen väriä</b>. Säde tulee värjätä vastaanottimen väriin.
+
+-- TARINA (story) --
+  story[0] (viesti): Signaalit seurattu. Nyt rakennetaan.
+  story[1] (viesti): Salmi rakensi salaisen optisen releen Radiomäen korville – sanottiin, että se välitti viestejä kauemmas kuin kukaan ymmärsi.
+  story[2] (viesti): Tämä ohjelma simuloi releen kalibrointia: säde on johdettava peileillä vastaanottimeen. Jokainen peli luo uuden radan.
+  story[3] ASK.kysymys: Miten menee siellä?
+  story[3] ASK.respond: Hyvä kuulla, {nimi}. Keskity – nyt vaaditaan päättelyä. | Pidä vauhti yllä.
+
+-- VIHJEET (hints) --
+  hint[0]: Seuraa sädettä silmälläsi – missä se kääntyy väärään suuntaan?
+  hint[1]: Vinoviiva / ohjaa ylös tai alas, \ ohjaa toisinpäin.
+  hint[2]: Violetti jakaja jakaa säteen: yksi haara jatkaa suoraan, toinen heijastuu.
+  hint[3]: Tumma peili × on kiinteä – rakenna reitti sen ympärille.
+  hint[4]: Värillinen vinoneliö on suodatin – NAPAUTA sitä kierrättääksesi väriä (punainen/vihreä/sininen).
+  hint[5]: Suodatin värjää säteen – vastaanotin hyväksyy vain oman värinsä. Johdata säde suotimen LÄPI ennen maalia.
+  hint[6]: Jos rata tuntuu mahdottomalta – nappi arpoo uuden radan.
+  hint[7]: Kaikkia peilejä ei tarvita – osa on vain tiellä hämäämässä.
+
+-- RATKAISU (solutions - EI ole näkyvä, mutta vaikuttaa) --
+  answers: rele7
+-- REWARD --
+  codePart: R
+  revealText: Rele kalibroitu – säde kantaa perille.
+
+======================================================================
+VAIHE 5: Muurinmurtaja  (id: step_05, tyyppi: breakout)
+======================================================================
+[title] Muurinmurtaja
+[promptShort] Riko salaajan muuri – nyt vahvempi.
+[prompt] Turvamuuri versio 2: vahvistettuja tiiliä ylimmissä riveissä (2 osumaa). Rikotuista tiileistä voi pudota <b>voima-upseja</b>: <b>M</b>=lisäpallo, <b>W</b>=leveä maila, <b>S</b>=hidas pallo. Kolme elämää.
+
+-- TARINA (story) --
+  story[0] (viesti): Masto pystyssä – signaali kantoi. Avasimme Salmen varaston sijainnin.
+  story[1] (viesti): Mutta varaston suojauksena on turvamuuri ohjelmana – Salmi ei jättänyt mitään varkaille.
+  story[2] (viesti): Ylimmät rivit ovat vahvistettuja. Ja pallo kiihtyy – pidä hermot kurissa. Saalis: voima-upseja putoaa tiileistä.
+  story[3] CHAT.aloitus: Kysy vapaasti – varastosta, muurista, mistä vain. 'jatka' kun valmis.
+  story[3] CHAT.more: Muuta? – tai 'jatka'.
+  story[3] CHAT.bye: Hyvä – muuri odottaa murtajaansa.
+  story[3] CHAT.default: Pidä fokus muurissa, {nimi}. | Keskity nyt tähän – loput myöhemmin. | Tähän ei ole yhtä vastausta – mene eteenpäin.
+  story[3] CHAT.reply[muuri|tiili]: Turvamuuri ohjelmana – riko kaikki tiilet. Tummemmat reunat = 2 osumaa.
+  story[3] CHAT.reply[maila|pallo]: Maila liikkuu sormella – ohjausalue on mailan alapuolella. Pallo kiihtyy.
+  story[3] CHAT.reply[voima|upse|bonus|puto]: M=lisäpallo, W=leveä maila, S=hidas pallo. Saaliina tiileistä.
+  story[3] CHAT.reply[salmi|varasto]: Salmen varaston suojaus – hän ei jättänyt mitään varkaille.
+  story[3] CHAT.reply[koodi|pala]: Murtunut muuri paljastaa uuden koodinpalan.
+  story[3] CHAT.reply[vihje|apu]: Vihje-nappi auttaa, jos muuri tuntuu ylitsepääsemättömältä.
+
+-- VIHJEET (hints) --
+  hint[0]: Mailan reuna antaa kulmaa.
+  hint[1]: Vahvistettu tiili näkyy tummempana reunoineen.
+
+-- RATKAISU (solutions - EI ole näkyvä, mutta vaikuttaa) --
+  answers: seinamurtunut
+-- REWARD --
+  codePart: L
+  revealText: Muuri murtui – varaston ovi avautui.
+
+======================================================================
+VAIHE 6: Pakoreitti  (id: step_06, tyyppi: maze)
+======================================================================
+[title] Pakoreitti
+[promptShort] Etsi uloskäynti generoidusta labyrintistä.
+[prompt] Salmi rakensi <b>pimeän pakoreitin</b> – nyt isompi: näet vain askeleen ympärillesi. Löydä <b>3 avainta</b> – vasta sitten uloskäynti oikeasta alakulmasta avautuu. <b>Taskulamppu</b> (2 kertaa) valaisee koko kentän hetkeksi. Liiku pyyhkäisemällä tai nuolinäppäimillä.
+
+-- TARINA (story) --
+  story[0] (viesti): Muuri murtui. Varastolta löytyi karttoja – ja yksi poimittu pakoreitti.
+  story[1] (viesti): Mutta: kartta riitti vain siksi kuin lamppu kesti. Salmi suunnitteli pimeän tunnelin – näet vain askeleen ympärillesi.
+  story[2] (viesti): Jossain tunnelissa on kolme avainta. Ilman niitä uloskäynti pysyy lukossa. Ja labyrintti generoituu joka pelaajalle erikseen.
+  story[3] ASK.kysymys: Pelottaako pimeys?
+  story[3] ASK.respond: Lamppu riittää – mennään. | Luota muistiisi, {nimi}.
+
+-- VIHJEET (hints) --
+
+-- RATKAISU (solutions - EI ole näkyvä, mutta vaikuttaa) --
+  answers: reitti17x23
+-- REWARD --
+  codePart: E
+  revealText: Pakoreitti löytyi – Salmen jalanjäljet näkyvät.
+
+======================================================================
+VAIHE 7: Miinakenttä  (id: step_07, tyyppi: mines)
+======================================================================
+[title] Miinakenttä
+[promptShort] Paljasta kaikki turvalliset ruudut.
+[prompt] Professori kaiversi <b>miinakentän</b> satamalle: 9x9 ruutua, 12 miinaa. Paljasta turvalliset – liputa miinat. Ensimmäinen klikkaus on aina turvallinen.
+
+-- TARINA (story) --
+  story[0] (viesti): Pakoreitti toimi. Reitin varrelta löytyi hälyttävä merkki: Salmi oli miinoittanut väestönsuojan.
+  story[1] (viesti): Onneksi hän dokumentoi kentän tarkasti – numerot paljastavat viereisten ruutujen miinojen määrän.
+  story[2] (viesti): Paljasta kaikki turvalliset ruudut. Ensimmäinen avaus on aina vapaa – sen jälkeen päätelmät ratkaisevat.
+  story[3] ASK.kysymys: Uskallatko jatkaa?
+  story[3] ASK.respond: Hitti – olet lujempi kuin luulin. | Kestä vielä, {nimi} – loppu häämöttää.
+  story[4] CHAT.aloitus: Kysy vapaasti ennen kenttää – miinoista tai tapauksesta. 'jatka' kun valmis.
+  story[4] CHAT.more: Muuta? – tai 'jatka'.
+  story[4] CHAT.bye: Varovasti – kenttä ei anna anteeksi.
+  story[4] CHAT.default: Rauhallinen käsi selviää, {nimi}. | Numerot eivät valehtele – luota niihin. | Palaamme tähän – kenttä odottaa.
+  story[4] CHAT.reply[miina|kenttä|ruutu]: 9x9 kenttä, 12 miinaa. Numerot kertovat viereiset miinat – ensimmäinen klikkaus on aina turvallinen.
+  story[4] CHAT.reply[lippu|liput]: Kaivuutila-nappi vaihtaa liputukseen – merkitse epäilyttävät.
+  story[4] CHAT.reply[salmi|miinoit]: Salmi dokumentoi kaiken – hän ei halunnut vahinko-osumia, vain harjoituksen.
+  story[4] CHAT.reply[räjä|kuole|hävi]: Miinaan osuminen räjäyttää kentän – aloitat alusta.
+  story[4] CHAT.reply[vihje|apu]: Numeropäättely ratkaisee. Nolla-alueet avautuvat itsestään.
+
+-- VIHJEET (hints) --
+  hint[0]: 0-alueet avautuvat automaattisesti.
+  hint[1]: Jos numero on yhtä suuri kuin liputettujen määrä, muut viereiset ovat turvallisia.
+
+-- RATKAISU (solutions - EI ole näkyvä, mutta vaikuttaa) --
+  answers: selvitetty9x12
+-- REWARD --
+  codePart: 1
+  revealText: Kenttä selvitetty – viesti avautui.
+
+======================================================================
+VAIHE 8: Drone-lento  (id: step_08, tyyppi: flappy)
+======================================================================
+[title] Drone-lento
+[promptShort] Läpäise 12 porttia drone-kalibrilennolla.
+[prompt] Salmen drone-simulaattori: kosketa noustaaksesi, vapauta painuaksesi. Läpäise <b>12 porttia</b> putkien välistä.
+
+-- TARINA (story) --
+  story[0] (viesti): Kenttä selvitetty ilman räjähdyksiä. Ammattimaista työtä.
+  story[1] (viesti): Salmen drooni kuljetti paketteja puistojen yli – tämä simulaattori on hänen kalibrointilennonsa.
+  story[2] (viesti): Tasan 12 porttia. Rauhalliset näpäytykset – älä hosu.
+
+-- VIHJEET (hints) --
+  hint[0]: Pienet näpäytykset – älä hosu.
+  hint[1]: Katso aukkoa, älä putkea.
+
+-- RATKAISU (solutions - EI ole näkyvä, mutta vaikuttaa) --
+  answers: lento12
+-- REWARD --
+  codePart: 9
+  revealText: Lento suoritettu. Drooni toi koordinaatit.
+
+======================================================================
+VAIHE 9: Tornin siirto  (id: step_09, tyyppi: hanoi)
+======================================================================
+[title] Tornin siirto
+[promptShort] Siirrä 5 kiekkoa kolmella tangolla.
+[prompt] Salmen looginen pulma: siirrä kaikki <b>5 kiekkoa</b> vasemmalta oikealle. Iso kiekko ei saa painaa pientä. Minimi: 31 siirtoa.
+
+-- TARINA (story) --
+  story[0] (viesti): Lento meni läpi. Drooni palautti viimeisen vihjeen – arkiston holviin jääneen tornin.
+  story[1] (viesti): Salmen loogisin pulma. Muistioon hän oli raapustanut: "Joka ymmärtää rekursion, ymmärtää maailman."
+  story[2] (viesti): Viisi kiekkoa, kolme tankoa, yksi sääntö. Mieti suunnitelma ennen ensimmäistä siirtoa.
+  story[3] ASK.kysymys: Oletko kohdannut Hanoi-tornin aiemmin?
+  story[3] ASK.respond: Sama logiikka pelaa nyt. | Näytä mitä osaat, {nimi}.
+
+-- VIHJEET (hints) --
+  hint[0]: Siirrä pienin kiekko ensin.
+  hint[1]: Tavoite: saa pohjakiekko vapaaksi ja siirrä se oikealle.
+  hint[2]: Viidellä kiekolla minimi on 31 siirtoa – älä kiirehdi.
+
+-- RATKAISU (solutions - EI ole näkyvä, mutta vaikuttaa) --
+  answers: hanoi5
+-- REWARD --
+  codePart: 4
+  revealText: Torni siirretty. Viimeinen taso auki.
+
+======================================================================
+VAIHE 10: Sirpalekuva  (id: step_10, tyyppi: slider15)
+======================================================================
+[title] Sirpalekuva
+[promptShort] Kokoa sirpaloitunut kartta 4x4-liukupalapelinä.
+[prompt] Satamasta löytyi sirpaloitunut kartta. Liikuta paloja ja kokoa kuva takaisin järjestykseen 1-15.
+
+-- TARINA (story) --
+  story[0] (viesti): Viimeinen pala. Salmi rikkoi lopullisen kartan viiteentoista sirpaleeseen.
+  story[1] (viesti): Muistioon hän oli kirjoittanut: "Koska helppolukuinen maailma olisi tylsä."
+  story[2] (viesti): Kokoa palat järjestykseen. Tämän jälkeen koodinpalat ovat kaikki hallussasi – jäljellä on vain loppukoodi.
+  story[3] ASK.kysymys: Viimeinen testi, {nimi} – hengitätkö vielä?
+  story[3] ASK.respond: Sitten viimeinen suoritus. | Hyvä – mennään loppuun.
+  story[4] CHAT.aloitus: Viimeinen tehtävä edessä. Kysy vapaasti – tai 'jatka' viimeiseen suoritukseen.
+  story[4] CHAT.more: Jotain vielä? – tai 'jatka'.
+  story[4] CHAT.bye: Kokoa kuva – loppu häämöttää.
+  story[4] CHAT.default: Melkein perillä, {nimi} – kokoa ensin. | Viimeinen hetki. Keskity. | Vastaan kun kaikki on ohi – nyt sirpaleet.
+  story[4] CHAT.reply[koodi|loppu]: Tämän jälkeen kaikki palat ovat hallussasi. TODISTEET-näkymä kokoaa koodin.
+  story[4] CHAT.reply[salmi|kartta|sirpale]: Salmi rikkoi loppukartan viiteentoista sirpaleeseen – järjestys paljastaa kuvan.
+  story[4] CHAT.reply[palat|pulma|liuku]: 4x4 liukupalapeli – yksi tyhjä ruutu liikuttaa paloja.
+  story[4] CHAT.reply[valmis|vaikea|onnistuu]: Olet päässyt näin pitkälle – viimeinen ei pysäytä.
+  story[4] CHAT.reply[kiitos|kiva|mahtava]: Olet ollut mallioppilas, {nimi}. Salmi olisi ylpeä.
+
+-- VIHJEET (hints) --
+  hint[0]: Rakenna ensin ylärivi (1-4).
+  hint[1]: Viimeinen rivi ratkeaa pyörittämällä.
+
+-- RATKAISU (solutions - EI ole näkyvä, mutta vaikuttaa) --
+  answers: kuvakoottu
+-- REWARD --
+  codePart: 7
+  revealText: Sirpalekuva koottu. Viimeinen pala tuli.
+======================================================================
+### PELIMODUULIEN SISAISET TEKSTIT (status/napit) ###
+(naissa voi olla dynaamisia osia - {N} = numero tms.)
+
+--- range.js ---
+  "Osumia 0 / "
+  "Aloita rata"
+  "Valmiina - maalit tulossa..."
+  "Osumia "
+  "Tarkkaa työtä - "
+  "Rata nollattu - alusta alusta"
+
+--- sequence.js ---
+  "▶ Aloita / kuuntele uudelleen"
+
+--- snake.js ---
+  "Pyyhkäise ruutua tai käytä nuolinäppäimiä - "
+  "Aloita peli"
+  "Anna suunta - "
+  "Pyyhkäise tai käytä nuolia - "
+  "OSUIT! Kosketa suuntaa aloittaaksesi uudelleen"
+  "Omenoita: "
+  "Kohdetaso saavutettu!"
+
+--- laser.js ---
+  "Ladataan..."
+  "TASO "
+  "Kaikki "
+  "Rataa ei saatu luotua - sulje ja avaa uudelleen"
+  "Arpoo uuden radan"
+
+--- breakout.js ---
+  "Riko kaikki tiilet"
+  "Aloita murtaminen"
+  "Kosketa mailaa - riko kaikki tiilet"
+  "LISAPALLO! "
+  "LEVEÄ MAILA 10 s!"
+  "HIDAS PALLO 8 s!"
+  "Tiiliä jäljellä: "
+  "Muuri murtui!"
+  "Elämät loppu - aloitetaan alusta"
+  "Pallot menivät! Elämiä: "
+
+--- maze.js ---
+  "Etsi "
+  "Avain! "
+  "Ulos! "
+  "LUKITTU - puuttuu "
+  "🔦 Taskulamppu ("
+  "Lamppu palaa - muistele reittiä! (3 s)"
+
+--- mines.js ---
+  "Paljasta turvalliset ruudut - "
+  "MIINA! Kosketa ruutua aloittaaksesi uudelleen."
+  "Kenttä selvitetty!"
+
+--- flappy.js ---
+  "Lennä "
+  "Aloita lento"
+  "Kosketa ruutua noustaaksesi"
+  "Portteja: "
+  "Lento suoritettu!"
+  "OSUIT! "
+
+--- hanoi.js ---
+  "Siirrä kaikki "
+  "Siirtoja: "
+  "Torni siirretty! "
+
+--- slider15.js ---
+  "Järjestä palat 1-"
+  "Siirtoja: "
+  "Kuva koottu! Siirtoja: "
+

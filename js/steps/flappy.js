@@ -26,6 +26,8 @@ window.Steps["flappy"] = function (container, step, api) {
     if (startBtn) { startBtn.parentNode.remove(); startBtn = null; }
     status.set("Kosketa ruutua noustaaksesi");
   }, true);
+  // nappi canvasin YLAPUOLELLE - muuten se jaa sheetin alareunan alle
+  container.insertBefore(startBtn.parentNode, cv.el);
 
   function reset() {
     bird = { x: W * 0.28, y: H / 2, vy: 0, r: 11 };

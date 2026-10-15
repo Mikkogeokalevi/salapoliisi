@@ -51,6 +51,8 @@ window.Steps["range"] = function (container, step, api) {
     g.timeout(700, spawn);
     g.every(SPAWN, spawn);
   }, true);
+  // nappi ruudukon YLAPUOLELLE - muuten se jaa sheetin alareunan alle
+  container.insertBefore(startBtn.parentNode, grid);
 
   function setStatus() {
     status.set("Osumia " + hits + " / " + GOAL + " · huteja " + misses + " / " + MAXMISS);

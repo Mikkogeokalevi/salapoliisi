@@ -31,6 +31,8 @@ window.Steps["snake"] = function (container, step, api) {
     if (startBtn) { startBtn.parentNode.remove(); startBtn = null; }
     status.set("Anna suunta - " + APPLES + " omenaa, varo pommeja!");
   }, true);
+  // nappi canvasin YLAPUOLELLE - muuten se jaa sheetin alareunan alle
+  container.insertBefore(startBtn.parentNode, cv.el);
 
   function reset() {
     snake = [{ x: 8, y: 8 }, { x: 7, y: 8 }, { x: 6, y: 8 }];

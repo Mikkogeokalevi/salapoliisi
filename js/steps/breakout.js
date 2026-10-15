@@ -30,6 +30,8 @@ window.Steps["breakout"] = function (container, step, api) {
     if (startBtn) { startBtn.parentNode.remove(); startBtn = null; }
     status.set("Kosketa mailaa - riko kaikki tiilet");
   }, true);
+  // nappi canvasin YLAPUOLELLE - muuten se jaa sheetin alareunan alle
+  container.insertBefore(startBtn.parentNode, cv.el);
 
   function speedNow() {
     var s = baseSpeed;
