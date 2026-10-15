@@ -28,6 +28,10 @@ html {
   height: 100%;
 }
 
+/* Pull-to-refresh ja scroll-chaining pois: pelien swipet eivat
+   saa paivittaa sivua tai vuotaa vierityksena taustalle. */
+html, body { overscroll-behavior: none; }
+
 body {
   background: var(--bg);
   color: var(--text);
@@ -37,6 +41,15 @@ body {
   min-height: 100%;
   -webkit-tap-highlight-color: transparent;
 }
+
+/* Double-tap-zoom pois interaktiivisilta alueilta (nopeat napautukset
+   peleissa eivat saa laueta zoomina). Canvas asettaa oman 'none'-arvonsa. */
+button, input, select, textarea, a,
+.grid-cell, .seq-pad, .wire-row, .order-item, .board-item, .task-card {
+  touch-action: manipulation;
+}
+
+button { user-select: none; -webkit-user-select: none; }
 
 button, input, textarea, select {
   font: inherit;

@@ -33,6 +33,8 @@
     inp.placeholder = placeholder || "Vastaus...";
     inp.autocomplete = "off";
     inp.autocapitalize = "none";
+    inp.setAttribute("autocorrect", "off");
+    inp.setAttribute("spellcheck", "false");
     inp.setAttribute("enterkeyhint", "done");
     var btn = document.createElement("button");
     btn.className = "btn primary";
@@ -144,7 +146,18 @@
     return {
       every: function (ms, fn) { timers.push(setInterval(fn, ms)); },
       timeout: function (ms, fn) { timers.push(setTimeout(fn, ms)); },
-      raf: function (fn) { if (!dead) rafs.push(requestAnimationFrame(fn)); },
+      // raf-id poistetaan listasta kun frame on suoritettu - muuten
+      // pitka kestavat pelit (laser/flappy) kasvattaisivat listaa
+      // 60 alkiota sekunnissa ilman syysta.
+      raf: function (fn) {
+        if (dead) return;
+        var id = requestAnimationFrame(function (t) {
+          var i = rafs.indexOf(id);
+          if (i > -1) rafs.splice(i, 1);
+          fn(t);
+        });
+        rafs.push(id);
+      },
       on: function (el, ev, fn) { el.addEventListener(ev, fn); listeners.push([el, ev, fn]); },
       alive: function () { return !dead; },
       cleanup: function () {
@@ -163,7 +176,9 @@
     c.style.cssText =
       "width:100%;max-width:" + w + "px;display:block;margin:0 auto;" +
       "border:1px solid var(--line);border-radius:12px;background:#0c1119;" +
-      "touch-action:none";
+      "touch-action:none;-webkit-user-select:none;user-select:none;" +
+      "-webkit-touch-callout:none";
+    c.addEventListener("contextmenu", function (e) { e.preventDefault(); });
     container.appendChild(c);
     return { el: c, ctx: c.getContext("2d") };
   };

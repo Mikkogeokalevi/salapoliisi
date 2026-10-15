@@ -80,8 +80,8 @@
   color: var(--text-dim);
   border: 1px solid var(--line);
   border-radius: 999px;
-  padding: .35rem .6rem;
-  min-height: 32px;
+  padding: .35rem .7rem;
+  min-height: 38px;
   white-space: nowrap;
 }
 
@@ -145,6 +145,7 @@
   overflow-y: auto;
   padding: 1rem .9rem 1rem;
   scroll-behavior: smooth;
+  overscroll-behavior: contain;
 }
 
 .msg {
@@ -165,6 +166,7 @@
   font-size: .95rem;
   line-height: 1.55;
   white-space: pre-wrap;
+  overflow-wrap: break-word;
 }
 
 .msg.handler .bubble {
@@ -318,7 +320,7 @@ body.sheet-lock { overflow: hidden; }
   max-width: 640px;
   margin: 0 auto;
   max-height: 92vh;
-  max-height: 92dvh;
+  max-height: 92svh; /* svh: ei kokoahyppya kun osoiterivi katoaa */
   display: flex;
   flex-direction: column;
   background: var(--bg-2);
@@ -361,6 +363,7 @@ body.sheet-lock { overflow: hidden; }
   overflow-y: auto;
   overflow-x: hidden;
   overscroll-behavior: contain;
+  touch-action: pan-y; /* vertikaalivieritys ok, pinch-zoom ei */
   padding: 1rem 1rem calc(1.2rem + var(--safe-b));
   flex: 1;
 }
@@ -368,7 +371,9 @@ body.sheet-lock { overflow: hidden; }
 .sheet-close {
   color: var(--text-dim);
   font-size: 1.3rem;
-  padding: .2rem .5rem;
+  padding: .4rem .7rem;
+  min-width: 44px;
+  min-height: 44px;
   line-height: 1;
 }
 

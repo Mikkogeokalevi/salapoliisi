@@ -180,7 +180,7 @@ window.Steps["snake"] = function (container, step, api) {
 
   // Kannettavan nappaimisto: nuolinappaimet + WASD
   g.on(document, "keydown", function (e) {
-    if (e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
+    if (e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
     var k = e.key;
     var d = k === "ArrowUp" || k === "w" || k === "W" ? "up" :
             k === "ArrowDown" || k === "s" || k === "S" ? "down" :
