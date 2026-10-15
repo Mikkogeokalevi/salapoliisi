@@ -1,26 +1,30 @@
-// Pulmatyyppi: laser - peilipeli, 5 tasoa.
+// Pulmatyyppi: laser - peilipeli, 10 tasoa.
 // Napauta peileja kaantaaksesi suuntaa (/ tai \). Johdata lasersade
 // lahteesta vastaanottimeen. Vaikeammilla tasoilla:
 //   - sateenjakajat (violetti): sade jatkaa suoraan JA heijastuu sivulle
+//   - ketjutetut jakajat (split2): haara jakautuu uudelleen -> 3 maalia
 //   - kiinteet peilit (tummat): eivat kaanny, ohitettava muilla peileilla
 //   - esteet (seinat): sade pysahtyy, ei voi kulkea lapi
 //   - varilliset vastaanottimet + suotimet: sade on varjattava oikein
 // Rata generoidaan joka kerralla ja varmistetaan ratkaistavaksi.
-// params: { levels: [ {size,turns,decoys,fixed,walls}
-//          | {size,stem,branch,decoys,fixed,walls,split:true,colored:true} ] }
+// params: { levels: [ {size,turns,decoys,fixed,walls,span,minCover}
+//          | {size,stem,branch,...,split|split2:true,colored:true} ] }
 // guess = "rele" + tasojen maara
 window.Steps["laser"] = function (container, step, api) {
   "use strict";
   var U = window.StepsUI;
   var P = step.params || {};
   var LEVELS = P.levels || [
-    { size: 9,  turns: 6, decoys: 5, walls: 4, fixed: 2 },
-    { size: 11, turns: 8, decoys: 7, walls: 6, fixed: 3 },
-    { size: 11, stem: 4, branch: 3, decoys: 8, split: true, walls: 5, fixed: 2 },
-    { size: 13, stem: 4, branch: 3, decoys: 9, split: true, walls: 7, fixed: 3 },
-    { size: 13, stem: 4, branch: 3, decoys: 9, split: true, walls: 7, fixed: 3, colored: true },
-    { size: 15, stem: 4, branch: 3, decoys: 11, split: true, walls: 9, fixed: 4, colored: true },
-    { size: 15, stem: 3, branch: 2, decoys: 11, split2: true, walls: 10, fixed: 5, colored: true }
+    { size: 9,  turns: 7, decoys: 6, walls: 4, fixed: 2, span: 5, minCover: 2.5 },
+    { size: 11, turns: 9, decoys: 8, walls: 6, fixed: 3, span: 5, minCover: 2.5 },
+    { size: 11, turns: 11, decoys: 9, walls: 7, fixed: 4, span: 6, minCover: 2.8 },
+    { size: 13, stem: 4, branch: 4, decoys: 9, split: true, walls: 7, fixed: 3, span: 5, minCover: 2.4 },
+    { size: 13, stem: 4, branch: 3, decoys: 10, split: true, walls: 7, fixed: 3, colored: true, span: 5, minCover: 2.4 },
+    { size: 15, stem: 5, branch: 4, decoys: 11, split: true, walls: 9, fixed: 4, colored: true, span: 6, minCover: 2.4 },
+    { size: 15, stem: 3, branch: 2, decoys: 11, split2: true, walls: 10, fixed: 5, span: 5, minCover: 2.6 },
+    { size: 15, stem: 4, branch: 2, decoys: 12, split2: true, walls: 10, fixed: 5, colored: true, span: 5, minCover: 2.6 },
+    { size: 15, stem: 4, branch: 2, decoys: 13, split2: true, walls: 9, fixed: 5, colored: true, span: 5, minCover: 2.6 },
+    { size: 15, stem: 4, branch: 3, decoys: 14, split2: true, walls: 9, fixed: 6, colored: true, span: 5, minCover: 2.5, tries: 3000 }
   ];
   var FCYCLE = ["r", "g", "b"];
   var CMAP = { w: "#e8c05a", r: "#e05555", g: "#6fd597", b: "#5ec8e8" };
@@ -47,16 +51,18 @@ window.Steps["laser"] = function (container, step, api) {
   }
 
   // count peilia jatkaen pisteesta cur suuntaan d. blocked = {seinat + peilit}.
-  function buildLegs(count, cur, d, used, blocked) {
+  // span = jalan maksimipituus (pidempi -> rata levittaytyy isommalle).
+  function buildLegs(count, cur, d, used, blocked, span) {
     var cellsOut = [];
+    var sp = span || 4;
     for (var t = 0; t < count; t++) {
       var max = 0, tr = cur[0], tc = cur[1];
       while (inside(tr + d[0], tc + d[1]) && !blocked[key(tr + d[0], tc + d[1])]) {
         tr += d[0]; tc += d[1]; max++;
       }
       if (max < 3) return null;
-      // valit jopa 5 askelta -> rata levittaytyy isommalle alueelle
-      var s = 2 + Math.floor(Math.random() * Math.min(max - 1, 4));
+      // valit jopa span askelta -> rata levittaytyy isommalle alueelle
+      var s = 2 + Math.floor(Math.random() * Math.min(max - 1, sp));
       var lr = cur[0] + d[0] * s, lc = cur[1] + d[1] * s;
       if (used[key(lr, lc)] || blocked[key(lr, lc)]) return null;
       for (var k = 1; k <= s; k++) {
@@ -83,13 +89,13 @@ window.Steps["laser"] = function (container, step, api) {
   }
 
   // Aseta sateenjakaja jalan loppuun: palauttaa {jr,jc,straight,ref} tai null.
-  function placeSplitter(cur, d, used, blocked) {
+  function placeSplitter(cur, d, used, blocked, span) {
     var max = 0, tr = cur[0], tc = cur[1];
     while (inside(tr + d[0], tc + d[1]) && !blocked[key(tr + d[0], tc + d[1])]) {
       tr += d[0]; tc += d[1]; max++;
     }
     if (max < 3) return null;
-    var s = 2 + Math.floor(Math.random() * Math.min(max - 1, 4));
+    var s = 2 + Math.floor(Math.random() * Math.min(max - 1, span || 4));
     var jr = cur[0] + d[0] * s, jc = cur[1] + d[1] * s;
     if (used[key(jr, jc)] || blocked[key(jr, jc)]) return null;
     for (var k = 1; k <= s; k++) used[key(cur[0] + d[0] * k, cur[1] + d[1] * k)] = true;
@@ -160,7 +166,8 @@ window.Steps["laser"] = function (container, step, api) {
   function gen() {
     var lv = LEVELS[li];
     N = lv.size;
-    for (var att = 0; att < 1000; att++) {
+    var maxAtt = lv.tries || 1000;
+    for (var att = 0; att < maxAtt; att++) {
       mirrors = []; receivers = {}; walls = {};
       var used = {};
       var blocked = {}; // seinat + peilit + jakajat (ei suotimia)
@@ -181,7 +188,7 @@ window.Steps["laser"] = function (container, step, api) {
       }
 
       var stem = (lv.split || lv.split2) ? (lv.stem || 3) : (lv.turns || 4);
-      var res = buildLegs(stem, [r, 0], d, used, blocked);
+      var res = buildLegs(stem, [r, 0], d, used, blocked, lv.span);
       if (!res) continue;
       var cur = res.cur; d = res.d;
 
@@ -192,25 +199,25 @@ window.Steps["laser"] = function (container, step, api) {
         if (!endAtReceiver(cur, d, blocked, used, nextColor())) continue;
       } else if (lv.split2) {
         // kaksi jakajaa: toinen haara jakautuu edelleen -> 3 maalia
-        var sp1 = placeSplitter(cur, d, used, blocked);
+        var sp1 = placeSplitter(cur, d, used, blocked, lv.span);
         if (!sp1) continue;
-        var hA = buildLegs(lv.branch || 2, [sp1.jr, sp1.jc], sp1.straight, used, blocked);
-        var hB = buildLegs(lv.branch || 2, [sp1.jr, sp1.jc], sp1.ref, used, blocked);
+        var hA = buildLegs(lv.branch || 2, [sp1.jr, sp1.jc], sp1.straight, used, blocked, lv.span);
+        var hB = buildLegs(lv.branch || 2, [sp1.jr, sp1.jc], sp1.ref, used, blocked, lv.span);
         if (!hA || !hB) continue;
-        var sp2 = placeSplitter(hA.cur, hA.d, used, blocked);
+        var sp2 = placeSplitter(hA.cur, hA.d, used, blocked, lv.span);
         if (!sp2) continue;
-        var hA1 = buildLegs(lv.branch || 2, [sp2.jr, sp2.jc], sp2.straight, used, blocked);
-        var hA2 = buildLegs(lv.branch || 2, [sp2.jr, sp2.jc], sp2.ref, used, blocked);
+        var hA1 = buildLegs(lv.branch || 2, [sp2.jr, sp2.jc], sp2.straight, used, blocked, lv.span);
+        var hA2 = buildLegs(lv.branch || 2, [sp2.jr, sp2.jc], sp2.ref, used, blocked, lv.span);
         if (!hA1 || !hA2) continue;
         if (!endAtReceiver(hA1.cur, hA1.d, blocked, used, nextColor())) continue;
         if (!endAtReceiver(hA2.cur, hA2.d, blocked, used, nextColor())) continue;
         if (!endAtReceiver(hB.cur, hB.d, blocked, used, nextColor())) continue;
         if (Object.keys(receivers).length < 3) continue;
       } else {
-        var sp = placeSplitter(cur, d, used, blocked);
+        var sp = placeSplitter(cur, d, used, blocked, lv.span);
         if (!sp) continue;
-        var bA = buildLegs(lv.branch || 2, [sp.jr, sp.jc], sp.straight, used, blocked);
-        var bB = buildLegs(lv.branch || 2, [sp.jr, sp.jc], sp.ref, used, blocked);
+        var bA = buildLegs(lv.branch || 2, [sp.jr, sp.jc], sp.straight, used, blocked, lv.span);
+        var bB = buildLegs(lv.branch || 2, [sp.jr, sp.jc], sp.ref, used, blocked, lv.span);
         if (!bA || !bB) continue;
         if (!endAtReceiver(bA.cur, bA.d, blocked, used, nextColor())) continue;
         if (!endAtReceiver(bB.cur, bB.d, blocked, used, nextColor())) continue;
@@ -227,7 +234,7 @@ window.Steps["laser"] = function (container, step, api) {
       var reachable = Object.keys(sol.hitCells).length === total;
       if (!reachable || (!lv.colored && Object.keys(sol.hits).length !== total)) continue;
       // vaadi etta polku levittyy ruudukolle (ei triviaalia suoraa ratkaisua)
-      if (Object.keys(sol.cells).length < N * 2.2) continue;
+      if (Object.keys(sol.cells).length < N * (lv.minCover || 2.2)) continue;
 
       // Varilliset vastaanottimet: suodatin kunkin osuvan sateen polulle.
       // Suosi soluja jotka kuuluvat VAIN kyseisen sateen polkuun.
