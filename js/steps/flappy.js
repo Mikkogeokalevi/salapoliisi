@@ -11,7 +11,7 @@ window.Steps["flappy"] = function (container, step, api) {
 
   U.prompt(container, step.prompt);
   var g = U.game();
-  var status = U.statusLine(container, "Lennä " + GATES + " portin läpi - kosketa noustaaksesi");
+  var status = U.statusLine(container, "Lennä " + GATES + " portin läpi – kosketa noustaaksesi");
 
   var W = Math.min(340, Math.floor(window.innerWidth * 0.88));
   var H = Math.min(Math.floor(W * 1.25), 430);
@@ -34,7 +34,7 @@ window.Steps["flappy"] = function (container, step, api) {
     pipes = [];
     passed = 0;
     dead = false; won = false; started = false;
-    status.set("Lennä " + GATES + " portin läpi - kosketa noustaaksesi");
+    status.set("Lennä " + GATES + " portin läpi – kosketa noustaaksesi");
   }
 
   function flap() {
@@ -93,7 +93,7 @@ window.Steps["flappy"] = function (container, step, api) {
     dead = true;
     if (navigator.vibrate) navigator.vibrate(120);
     if (window.Audio) window.Audio.error();
-    status.set("OSUIT! " + passed + "/" + GATES + " - kosketa yrittääksesi uudelleen");
+    status.set("OSUIT! " + passed + "/" + GATES + " – kosketa yrittääksesi uudelleen");
   }
 
   function draw() {

@@ -16,7 +16,7 @@ window.Steps["snake"] = function (container, step, api) {
   U.prompt(container, step.prompt);
   var g = U.game();
   var status = U.statusLine(container,
-    "Pyyhkäise ruutua tai käytä nuolinäppäimiä - " + APPLES + " omenaa, varo pommeja!");
+    "Pyyhkäise ruutua tai käytä nuolinäppäimiä – " + APPLES + " omenaa, varo pommeja!");
 
   var SZ = Math.min(360, Math.floor(window.innerWidth * 0.88));
   var cv = U.canvas(container, SZ, SZ);
@@ -29,7 +29,7 @@ window.Steps["snake"] = function (container, step, api) {
     if (armed) return;
     armed = true;
     if (startBtn) { startBtn.parentNode.remove(); startBtn = null; }
-    status.set("Anna suunta - " + APPLES + " omenaa, varo pommeja!");
+    status.set("Anna suunta – " + APPLES + " omenaa, varo pommeja!");
   }, true);
   // nappi canvasin YLAPUOLELLE - muuten se jaa sheetin alareunan alle
   container.insertBefore(startBtn.parentNode, cv.el);
@@ -44,7 +44,7 @@ window.Steps["snake"] = function (container, step, api) {
     armed = false;
     bombs = [];
     spawnApple();
-    status.set("Pyyhkäise tai käytä nuolia - " + APPLES + " omenaa, varo pommeja!");
+    status.set("Pyyhkäise tai käytä nuolia – " + APPLES + " omenaa, varo pommeja!");
   }
 
   function freeCell() {

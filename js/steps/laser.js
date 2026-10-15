@@ -456,7 +456,7 @@ window.Steps["laser"] = function (container, step, api) {
   }
 
   function startLevel() {
-    if (!gen()) { status.set("Rataa ei saatu luotua - sulje ja avaa uudelleen"); return; }
+    if (!gen()) { status.set("Rataa ei saatu luotua – sulje ja avaa uudelleen"); return; }
     setupCanvas();
     var lv = LEVELS[li];
     status.set("TASO " + (li + 1) + " / " + LEVELS.length +

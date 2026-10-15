@@ -91,7 +91,7 @@ window.Steps["maze"] = function (container, step, api) {
       if (k.r === py && k.c === px) {
         found++;
         if (window.Audio) window.Audio.click();
-        status.set("Avain! " + found + " / " + NKEYS + " - jatka etsimista");
+        status.set("Avain! " + found + " / " + NKEYS + " – jatka etsimistä");
         return false;
       }
       return true;
@@ -104,7 +104,7 @@ window.Steps["maze"] = function (container, step, api) {
         if (window.Audio) window.Audio.success();
         submit("reitti" + COLS + "x" + ROWS);
       } else {
-        status.set("LUKITTU - puuttuu " + (NKEYS - found) + " avainta");
+        status.set("LUKITTU – puuttuu " + (NKEYS - found) + " avainta");
         if (window.Audio) window.Audio.error();
       }
     }
@@ -170,7 +170,7 @@ window.Steps["maze"] = function (container, step, api) {
     lampBtn.textContent = "🔦 Taskulamppu (" + lamps + ")";
     if (!lamps) lampBtn.disabled = true;
     if (window.Audio) window.Audio.click();
-    status.set("Lamppu palaa - muistele reittiä! (3 s)");
+    status.set("Lamppu palaa – muistele reittiä! (3 s)");
     draw();
     g.timeout(3100, function () { if (g.alive()) draw(); });
   }, false);

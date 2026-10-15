@@ -97,7 +97,7 @@ window.Steps["sequence"] = function (container, step, api) {
           }
         } else {
           accepting = false;
-          status.textContent = "Väärä - kuuntele uudelleen";
+          status.textContent = "Väärä – kuuntele uudelleen";
           var fb = fbRef;
           if (fb) fb.show("Väärä sarja. Kuunnellaan uudelleen.", true);
           if (navigator.vibrate) navigator.vibrate(120);

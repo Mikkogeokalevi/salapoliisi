@@ -113,7 +113,7 @@
       return api.try(guess).then(function (r) {
         if (r.ok) return true;
         if (r.error) {
-          if (fb) fb.show("Yhteysvirhe - yritä uudelleen.", true);
+          if (fb) fb.show("Yhteysvirhe – yritä uudelleen.", true);
           return false;
         }
         var el = container.querySelector(".sheet-body") || container;

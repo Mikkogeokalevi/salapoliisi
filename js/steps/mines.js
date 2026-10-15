@@ -10,7 +10,7 @@ window.Steps["mines"] = function (container, step, api) {
 
   U.prompt(container, step.prompt);
   var g = U.game();
-  var status = U.statusLine(container, "Paljasta turvalliset ruudut - " + MINES + " miinaa");
+  var status = U.statusLine(container, "Paljasta turvalliset ruudut – " + MINES + " miinaa");
 
   var mineField, revealed, flagged, dead, won, firstClick;
 
@@ -35,7 +35,7 @@ window.Steps["mines"] = function (container, step, api) {
     mineField = []; revealed = []; flagged = [];
     for (var i = 0; i < N * N; i++) { mineField.push(0); revealed.push(false); flagged.push(false); }
     dead = false; won = false; firstClick = true;
-    status.set("Paljasta turvalliset ruudut - " + MINES + " miinaa");
+    status.set("Paljasta turvalliset ruudut – " + MINES + " miinaa");
     render();
   }
 

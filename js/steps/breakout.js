@@ -28,7 +28,7 @@ window.Steps["breakout"] = function (container, step, api) {
     if (armed) return;
     armed = true;
     if (startBtn) { startBtn.parentNode.remove(); startBtn = null; }
-    status.set("Kosketa mailaa - riko kaikki tiilet");
+    status.set("Kosketa mailaa – riko kaikki tiilet");
   }, true);
   // nappi canvasin YLAPUOLELLE - muuten se jaa sheetin alareunan alle
   container.insertBefore(startBtn.parentNode, cv.el);
@@ -85,7 +85,7 @@ window.Steps["breakout"] = function (container, step, api) {
       var b = balls[0] || { x: W / 2, y: H / 2, vx: 0, vy: -1 };
       balls.push(mkBall(b.x, b.y, -0.8));
       if (balls.length < 4) balls.push(mkBall(b.x, b.y, 0.8));
-      status.set("LISAPALLO! " + balls.length + " palloa pelissä");
+      status.set("LISÄPALLO! " + balls.length + " palloa pelissä");
     } else if (t === "wide") {
       wideUntil = Date.now() + 10000;
       paddle.w = paddle.wBase * 1.5;
@@ -163,7 +163,7 @@ window.Steps["breakout"] = function (container, step, api) {
       if (navigator.vibrate) navigator.vibrate(80);
       if (window.Audio) window.Audio.error();
       if (lives <= 0) {
-        status.set("Elämät loppu - aloitetaan alusta");
+        status.set("Elämät loppu – aloitetaan alusta");
         reset(false);
       } else {
         status.set("Pallot menivät! Elämiä: " + lives);

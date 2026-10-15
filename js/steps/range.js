@@ -47,7 +47,7 @@ window.Steps["range"] = function (container, step, api) {
     if (started) return;
     started = true;
     if (startBtn) { startBtn.parentNode.remove(); startBtn = null; }
-    status.set("Valmiina - maalit tulossa...");
+    status.set("Valmiina – maalit tulossa...");
     g.timeout(700, spawn);
     g.every(SPAWN, spawn);
   }, true);
@@ -104,7 +104,7 @@ window.Steps["range"] = function (container, step, api) {
     if (done || !started) return;
     var c = cells[idx];
     if (!c.target) {
-      miss("Huti - tyhjä laukaus");
+      miss("Huti – tyhjä laukaus");
       return;
     }
     var hostile = c.target.hostile;
@@ -117,12 +117,12 @@ window.Steps["range"] = function (container, step, api) {
       if (hits >= GOAL) {
         done = true;
         cells.forEach(removeTarget);
-        status.set("Tarkkaa työtä - " + GOAL + " osumaa");
+        status.set("Tarkkaa työtä – " + GOAL + " osumaa");
         if (window.Audio) window.Audio.success();
         submit("osumat" + GOAL);
       }
     } else {
-      miss("Siviili osui - älä ammu sinisiä");
+      miss("Siviili osui – älä ammu sinisiä");
     }
   }
 
@@ -135,7 +135,7 @@ window.Steps["range"] = function (container, step, api) {
     if (misses >= MAXMISS) {
       misses = 0; hits = 0;
       cells.forEach(removeTarget);
-      status.set("Rata nollattu - alusta alusta");
+      status.set("Rata nollattu – alusta");
       g.timeout(900, setStatus);
     }
   }
