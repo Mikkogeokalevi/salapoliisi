@@ -34,3 +34,33 @@ Firebase compat SDK 10.12.2 CDN:stä. Leaflet 1.9.4 CDN:stä.
 - Admin-sähköposti kahdessa paikassa: `js/config.js` ADMIN_EMAIL + `firestore.rules`
 - Mobiilifirst: testaa kapealla viewportilla; älä lisää hover-riippuvuutta
 - Vanhaa `lahenalueet`-projektia ei kosketa — erillinen Firebase-projekti `salapoliisi-dc4c0`
+
+## V2+ (tulevat mysteerit)
+
+Päätös: kaikki tulevat versiot (v2, v3, ...) SAMASSA Firebase-projektissa
+`salapoliisi-dc4c0` (ilmaiset projektit loppu). GitHub Pages tarjoilee
+`v2/`-alikansion suoraan → https://mikkogeokalevi.github.io/salapoliisi/v2/
+
+Rakenne kun v2 tehdään:
+
+- `v2/index.html`, `v2/admin.html`, `v2/data/seed.json` — omia
+- `js/`, `css/` JAETTU → v2 viittaa `../js/` (skripti-tagit suhteellisina)
+- Data ERIKSeen: `games/v2/{steps,solutions,rewards,solved,sessions,config}` —
+  v1 säilyy nykyisissä juurikokoelmissa (`steps/`, `solved/`...) koska
+  pelaajien progressio on jo kannassa. V2+ aina nimettyyn tilaan.
+
+Mitä vaaditaan kun v2 otetaan työn alle:
+
+1. engine.js/admin.js/sessions.js: kokoelmapolut helperin kautta,
+   esim. `colPath("steps")` → `""` (v1) tai `games/v2/steps` (v2).
+   Jo NYT: älä ota käyttöön uusia kokoelmia ilman tätä valmiutta.
+2. localStorage-avaimet pelikohtaisiksi (`sp_nick` → `sp_nick_v2`) —
+   localStorage on origin-kohtainen, joten v1/v2 jakavat avaimet jos
+   ei nimetä.
+3. firestore.rules: lisää generinen lohko `match /games/{game}/steps/{doc}`
+   jne. samaan logiikkaan kuin juurikokoelmat (solutions suljettu,
+   solved-verifiointi get():llä games/$(game)/solutions/...).
+4. Admin ja tools/import.html: pelivalitsin tai v2-omat versiot jotka
+   kirjoittavat games/v2/-polkuun.
+5. Auth: sama anon signIn toimii — uid sama projektissa, mutta
+   solved-dokumentit ovat eri polussa joten progressio ei sekoitu.
