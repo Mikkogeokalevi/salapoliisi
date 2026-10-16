@@ -28,6 +28,9 @@
     });
   }
 
+  // Julkinen scroll - inputbarin avautuminen ym. voi kutsua tata
+  Story.scroll = scrollDown;
+
   function stamp() {
     var d = new Date();
     return ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2);

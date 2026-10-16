@@ -7,8 +7,8 @@
 <title>Mikkokalevin salapoliisitoimisto</title>
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="stylesheet" href="css/base.css?v=20251015j">
-<link rel="stylesheet" href="css/game.css?v=20251015j">
+<link rel="stylesheet" href="css/base.css?v=20251015k">
+<link rel="stylesheet" href="css/game.css?v=20251015k">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -61,37 +61,37 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
-<script src="js/config.js?v=20251015j"></script>
-<script src="js/firebase-init.js?v=20251015j"></script>
-<script src="js/audio.js?v=20251015j"></script>
-<script src="js/engine.js?v=20251015j"></script>
-<script src="js/story.js?v=20251015j"></script>
-<script src="js/steps/common.js?v=20251015j"></script>
-<script src="js/steps/text.js?v=20251015j"></script>
-<script src="js/steps/coords.js?v=20251015j"></script>
-<script src="js/steps/lock.js?v=20251015j"></script>
-<script src="js/steps/cipher.js?v=20251015j"></script>
-<script src="js/steps/morse.js?v=20251015j"></script>
-<script src="js/steps/wires.js?v=20251015j"></script>
-<script src="js/steps/sequence.js?v=20251015j"></script>
-<script src="js/steps/order.js?v=20251015j"></script>
-<script src="js/steps/grid.js?v=20251015j"></script>
-<script src="js/steps/mapClick.js?v=20251015j"></script>
-<script src="js/steps/snake.js?v=20251015j"></script>
-<script src="js/steps/breakout.js?v=20251015j"></script>
-<script src="js/steps/runner.js?v=20251015j"></script>
-<script src="js/steps/memory.js?v=20251015j"></script>
-<script src="js/steps/slider15.js?v=20251015j"></script>
-<script src="js/steps/mastermind.js?v=20251015j"></script>
-<script src="js/steps/targets.js?v=20251015j"></script>
-<script src="js/steps/catch.js?v=20251015j"></script>
-<script src="js/steps/stack.js?v=20251015j"></script>
-<script src="js/steps/maze.js?v=20251015j"></script>
-<script src="js/steps/mines.js?v=20251015j"></script>
-<script src="js/steps/flappy.js?v=20251015j"></script>
-<script src="js/steps/hanoi.js?v=20251015j"></script>
-<script src="js/steps/range.js?v=20251015j"></script>
-<script src="js/steps/laser.js?v=20251015j"></script>
+<script src="js/config.js?v=20251015k"></script>
+<script src="js/firebase-init.js?v=20251015k"></script>
+<script src="js/audio.js?v=20251015k"></script>
+<script src="js/engine.js?v=20251015k"></script>
+<script src="js/story.js?v=20251015k"></script>
+<script src="js/steps/common.js?v=20251015k"></script>
+<script src="js/steps/text.js?v=20251015k"></script>
+<script src="js/steps/coords.js?v=20251015k"></script>
+<script src="js/steps/lock.js?v=20251015k"></script>
+<script src="js/steps/cipher.js?v=20251015k"></script>
+<script src="js/steps/morse.js?v=20251015k"></script>
+<script src="js/steps/wires.js?v=20251015k"></script>
+<script src="js/steps/sequence.js?v=20251015k"></script>
+<script src="js/steps/order.js?v=20251015k"></script>
+<script src="js/steps/grid.js?v=20251015k"></script>
+<script src="js/steps/mapClick.js?v=20251015k"></script>
+<script src="js/steps/snake.js?v=20251015k"></script>
+<script src="js/steps/breakout.js?v=20251015k"></script>
+<script src="js/steps/runner.js?v=20251015k"></script>
+<script src="js/steps/memory.js?v=20251015k"></script>
+<script src="js/steps/slider15.js?v=20251015k"></script>
+<script src="js/steps/mastermind.js?v=20251015k"></script>
+<script src="js/steps/targets.js?v=20251015k"></script>
+<script src="js/steps/catch.js?v=20251015k"></script>
+<script src="js/steps/stack.js?v=20251015k"></script>
+<script src="js/steps/maze.js?v=20251015k"></script>
+<script src="js/steps/mines.js?v=20251015k"></script>
+<script src="js/steps/flappy.js?v=20251015k"></script>
+<script src="js/steps/hanoi.js?v=20251015k"></script>
+<script src="js/steps/range.js?v=20251015k"></script>
+<script src="js/steps/laser.js?v=20251015k"></script>
 
 <script>
 (function () {
@@ -112,7 +112,7 @@
   Story._inputFn = function () {
     return new Promise(function (resolve) {
       inputMode = "chat";
-      inputbar.style.display = "flex";
+      showInput();
       mainInput.placeholder = "Kirjoita vastauksesi...";
       mainInput.focus();
       Story._chatResolve = resolve;
@@ -120,6 +120,22 @@
   };
 
   function beep(fn) { if (soundOn && window.Audio) { try { fn(); } catch (e) {} } }
+
+  // Inputbarin avaus: palkki vie tilaa, joten chat on vieritettava
+  // pohjaan UUDELLEEN - myos nappaimiston avautumisen jalkeen.
+  function showInput() {
+    showInput();
+    [60, 300, 650].forEach(function (ms) {
+      setTimeout(function () { Story.scroll(true); }, ms);
+    });
+  }
+
+  // Nappaimisto avautuu/sulkeutuu -> visualViewport muuttuu -> scrollaa
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", function () {
+      if (inputbar.style.display !== "none") Story.scroll(true);
+    });
+  }
 
   // --- Boot-sekvenssi ---------------------------------------------
   // Versio poimitaan skripti-URL:sta (?v=...) - aina synkassa
@@ -282,7 +298,7 @@
       "Kirjoita tehtävien aikana saamasi koodi."
     ]).then(function () {
       inputMode = "final";
-      inputbar.style.display = "flex";
+      showInput();
       mainInput.placeholder = "Koodi...";
       mainInput.focus();
     });
@@ -305,7 +321,7 @@
         "Olen palkannut sinut erityiseen tehtävään - mutta ensin: millä nimimerkillä sinua kutsutaan?"
       ]).then(function () {
         inputMode = "nick";
-        inputbar.style.display = "flex";
+        showInput();
         mainInput.placeholder = "Nimimerkkisi...";
         mainInput.focus();
       });
