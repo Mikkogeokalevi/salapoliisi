@@ -9,18 +9,22 @@
     Story.scrollEl = scrollEl;
     Story.el = document.createElement("div");
     scrollEl.appendChild(Story.el);
+    // "Sticky scroll": seuraa pohjaa vain jos pelaaja on jo alhaalla.
+    // Jos pelaaja vierittaa ylos lukemaan, uudet viestit eivat repi
+    // nakymaa alta pois.
+    Story._pinned = true;
+    scrollEl.addEventListener("scroll", function () {
+      Story._pinned =
+        scrollEl.scrollHeight - scrollEl.scrollTop - scrollEl.clientHeight < 60;
+    }, { passive: true });
   };
 
-  function scrollDown() {
+  function scrollDown(force) {
     requestAnimationFrame(function () {
       var el = Story.scrollEl;
       if (!el) return;
-      // scrollIntoView vierittaa oikean kontekstin (sisainen tai sivu)
-      if (el.lastElementChild) {
-        el.lastElementChild.scrollIntoView({ block: "end", behavior: "smooth" });
-      }
+      if (!force && Story._pinned === false) return;
       el.scrollTop = el.scrollHeight;
-      window.scrollTo(0, document.documentElement.scrollHeight);
     });
   }
 
@@ -111,7 +115,7 @@
     var nick = (window.Engine && window.Engine.nickname) || "SINA";
     var b = addMsg("player", nick.toUpperCase());
     b.textContent = text;
-    scrollDown();
+    scrollDown(true);
     return Promise.resolve();
   };
 

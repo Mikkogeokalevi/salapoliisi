@@ -1,8 +1,8 @@
 /* Salapoliisi - game.css: pelinaytto, chat, pulmat, animaatiot */
 
 #game-root {
-  min-height: 100vh;
-  min-height: 100dvh;
+  height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   max-width: 640px;
@@ -141,8 +141,10 @@
 /* --- Chat-virta ----------------------------------------------- */
 
 .chat-scroll {
-  flex: 1;
+  flex: 1 1 0;
+  min-height: 0;               /* flex-item saa kutistua -> vieritys toimii */
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   padding: 1rem .9rem 1rem;
   scroll-behavior: smooth;
   overscroll-behavior: contain;
