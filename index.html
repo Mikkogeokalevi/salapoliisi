@@ -7,8 +7,8 @@
 <title>Mikkokalevin salapoliisitoimisto</title>
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="stylesheet" href="css/base.css?v=20261031a">
-<link rel="stylesheet" href="css/game.css?v=20261031a">
+<link rel="stylesheet" href="css/base.css?v=20261031b">
+<link rel="stylesheet" href="css/game.css?v=20261031b">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -61,26 +61,26 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
-<script src="js/config.js?v=20261031a"></script>
-<script src="js/firebase-init.js?v=20261031a"></script>
-<script src="js/audio.js?v=20261031a"></script>
-<script src="js/engine.js?v=20261031a"></script>
-<script src="js/story.js?v=20261031a"></script>
-<script src="js/steps/common.js?v=20261031a"></script>
+<script src="js/config.js?v=20261031b"></script>
+<script src="js/firebase-init.js?v=20261031b"></script>
+<script src="js/audio.js?v=20261031b"></script>
+<script src="js/engine.js?v=20261031b"></script>
+<script src="js/story.js?v=20261031b"></script>
+<script src="js/steps/common.js?v=20261031b"></script>
 <!-- V1 lataa vain 10 pulmatyyppia joita seed/tuotanto kayttaa.
      V2-tyypit (eivatka lataudu pelaajalle): text coords lock cipher
      morse wires order grid mapClick runner memory mastermind targets
      catch stack - ne loytyvat js/steps/-kansiosta v2-kehitysta varten. -->
-<script src="js/steps/range.js?v=20261031a"></script>
-<script src="js/steps/sequence.js?v=20261031a"></script>
-<script src="js/steps/snake.js?v=20261031a"></script>
-<script src="js/steps/laser.js?v=20261031a"></script>
-<script src="js/steps/breakout.js?v=20261031a"></script>
-<script src="js/steps/maze.js?v=20261031a"></script>
-<script src="js/steps/mines.js?v=20261031a"></script>
-<script src="js/steps/flappy.js?v=20261031a"></script>
-<script src="js/steps/hanoi.js?v=20261031a"></script>
-<script src="js/steps/slider15.js?v=20261031a"></script>
+<script src="js/steps/range.js?v=20261031b"></script>
+<script src="js/steps/sequence.js?v=20261031b"></script>
+<script src="js/steps/snake.js?v=20261031b"></script>
+<script src="js/steps/laser.js?v=20261031b"></script>
+<script src="js/steps/breakout.js?v=20261031b"></script>
+<script src="js/steps/maze.js?v=20261031b"></script>
+<script src="js/steps/mines.js?v=20261031b"></script>
+<script src="js/steps/flappy.js?v=20261031b"></script>
+<script src="js/steps/hanoi.js?v=20261031b"></script>
+<script src="js/steps/slider15.js?v=20261031b"></script>
 
 <script>
 (function () {
@@ -297,7 +297,75 @@
     Story.system("TAPAUS RATKAISTU").then(function () {
       var r = Engine.reveals["final"] || "";
       return Story.reward(r || "Onnittelut - tapaus on ratkaistu!", null);
+    }).then(showFinalCard);
+  }
+
+  // --- Loppukortti: kopioitavat koordinaatit + vihje ------------------
+  // rewards/final voi sisaltaa kentat coords ja hint - jos ei,
+  // koordinaatit poimitaan revealText-tekstista automaattisesti.
+  var COORDS_RE = /[NS]\s*\d{1,3}°\s*[\d.]+[′']?\s*[EW]\s*\d{1,3}°\s*[\d.]+[′']?/;
+
+  function copyToClipboard(text, btn, label) {
+    function done() {
+      btn.textContent = "KOPIOITU ✓";
+      beep(function () { window.Audio.click(); });
+      setTimeout(function () { btn.textContent = label; }, 1600);
+    }
+    function fallback() {
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.cssText = "position:fixed;top:0;left:0;opacity:0";
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy"); done(); } catch (e) {}
+      ta.remove();
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, fallback);
+    } else {
+      fallback();
+    }
+  }
+
+  function showFinalCard() {
+    var fr = (Engine.rewardsData && Engine.rewardsData["final"]) || {};
+    var reveal = Engine.reveals["final"] || "";
+    var coords = fr.coords || (reveal.match(COORDS_RE) || [""])[0];
+    var hint = fr.hint || reveal;
+    if (!coords && !hint) return;
+
+    var card = document.createElement("div");
+    card.className = "final-copy";
+
+    if (coords) {
+      var lab = document.createElement("div");
+      lab.className = "fc-label";
+      lab.textContent = "LOPULLISET KOORDINAATIT";
+      card.appendChild(lab);
+      var c = document.createElement("div");
+      c.className = "fc-coords";
+      c.textContent = coords;
+      card.appendChild(c);
+      var bc = document.createElement("button");
+      bc.className = "btn primary";
+      bc.textContent = "KOPIOI KOORDINAATIT";
+      bc.addEventListener("click", function () {
+        copyToClipboard(coords, bc, "KOPIOI KOORDINAATIT");
+      });
+      card.appendChild(bc);
+    }
+
+    var bh = document.createElement("button");
+    bh.className = "btn ghost";
+    bh.style.marginTop = ".5rem";
+    bh.textContent = "KOPIOI VIHJE";
+    bh.addEventListener("click", function () {
+      copyToClipboard(hint, bh, "KOPIOI VIHJE");
     });
+    card.appendChild(bh);
+
+    Story.card(card);
   }
 
   // --- Nimimerkki -----------------------------------------------------

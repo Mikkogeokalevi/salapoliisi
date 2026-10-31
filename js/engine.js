@@ -16,6 +16,7 @@
     solved: {},          // stepId -> true
     codeParts: {},       // stepId -> codePart
     reveals: {},         // stepId -> revealText
+    rewardsData: {},     // stepId -> koko rewards-dokumentti (coords, hint ym.)
     wrongCounts: {},     // stepId -> n
     hintsUsed: {},       // stepId -> n
     nickname: null,
@@ -89,6 +90,7 @@
             if (d.exists) {
               Engine.codeParts[r.step.id] = d.data().codePart || "";
               Engine.reveals[r.step.id] = d.data().revealText || "";
+              Engine.rewardsData[r.step.id] = d.data();
             }
           }).catch(function () {})
         );
@@ -169,6 +171,7 @@
         var r = d.exists ? d.data() : {};
         Engine.codeParts[stepId] = r.codePart || "";
         Engine.reveals[stepId] = r.revealText || "";
+        Engine.rewardsData[stepId] = r;
         Engine._touchSession();
         return { ok: true, reveal: Engine.reveals[stepId], codePart: Engine.codeParts[stepId] };
       });

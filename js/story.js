@@ -163,6 +163,13 @@
     return card;
   };
 
+  // Vapaan kortin lisays virtaan (esim. loppuruudun kopiointikortti)
+  Story.card = function (el) {
+    Story.el.appendChild(el);
+    scrollDown();
+    return el;
+  };
+
   // Vapaamuotoinen kysymys pelaajalle - MINKA tahansa vastauksen han kirjoittaa
   // hyvaksytaan ja tarina jatkuu. m = { ask, respond: "..." | [...] }
   Story.ask = function (m) {

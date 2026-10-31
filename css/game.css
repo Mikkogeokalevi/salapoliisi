@@ -660,6 +660,41 @@ body.sheet-lock { overflow: hidden; }
   color: var(--text-dim);
 }
 
+/* Loppukortti: kopioitavat koordinaatit + vihje */
+.final-copy {
+  border: 1px solid var(--accent-dim);
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, #1d2331, #181d29);
+  padding: 1rem;
+  margin: .4rem 0 .8rem;
+  animation: msgIn .4s;
+}
+
+.final-copy .fc-label {
+  font-family: var(--mono);
+  font-size: .62rem;
+  letter-spacing: .16em;
+  color: var(--accent);
+}
+
+.final-copy .fc-coords {
+  font-family: var(--mono);
+  font-size: 1.05rem;
+  line-height: 1.5;
+  color: var(--text);
+  margin: .5rem 0 .8rem;
+  padding: .7rem .9rem;
+  background: var(--surface);
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  overflow-wrap: break-word;
+  /* koordinaatit tulee voida myos maalata kasin */
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.final-copy .btn { width: 100%; }
+
 /* Loppunaytto */
 .final-wrap { text-align: center; padding: 2rem 1rem; }
 
