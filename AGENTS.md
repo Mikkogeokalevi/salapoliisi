@@ -35,6 +35,8 @@ Firebase compat SDK 10.12.2 CDN:stä. Leaflet 1.9.4 CDN:stä.
   kätkösivulinkki; ilman niitä koordinaatit poimitaan revealText:stä
   regexillä ja linkki osoittaa GCBVFYZ-sivulle)
 - `solved/{uid}_{stepId}`, `sessions/{uid}`, `sessions/{uid}/wrongAnswers`
+- `stats/counters.{opens,lastOpenAt}` — kurkkauslaskuri; sessio syntyy
+  vasta kun nimimerkki annetaan (kirjoitetaan vain näihin kenttiin)
 - Loppukoodi: `solutions/final` + `rewards/final`
 
 ## Tärkeää

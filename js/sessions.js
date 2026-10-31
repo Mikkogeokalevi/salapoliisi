@@ -93,6 +93,16 @@
         render();
         renderAgg();
         loadFinals();
+        // Kurkkauslaskuri: pelin avanneet yhteensa vs. sessioiksi
+        // kirjautuneet (nimimerkin antaneet) - erotus = kurkkaajat.
+        db().collection("stats").doc("counters").get().then(function (d) {
+          var opens = d.exists ? (d.data().opens || 0) : 0;
+          $("peeks-line").textContent = opens
+            ? "PELIN AVANNEET YHT: " + opens +
+              "  ·  sessioita: " + allSessions.length +
+              "  ·  kurkkaajia ~ " + Math.max(0, opens - allSessions.length)
+            : "";
+        }).catch(function () {});
       }).catch(function (e) {
         $("sess-table").querySelector("tbody").innerHTML =
           '<tr><td colspan="6"><div class="notice err">Lataus epaonnistui: ' +
@@ -228,16 +238,51 @@
     el.innerHTML = html;
   }
 
-  function deleteSession(s) {
-    db().collection("sessions").doc(s.uid)
+  function deleteSessionDocs(uid) {
+    return db().collection("sessions").doc(uid)
       .collection("wrongAnswers").get()
       .then(function (qs) {
         var b = db().batch();
         qs.docs.forEach(function (d) { b.delete(d.ref); });
-        b.delete(db().collection("sessions").doc(s.uid));
+        b.delete(db().collection("sessions").doc(uid));
         return b.commit();
-      })
+      });
+  }
+
+  function deleteSession(s) {
+    deleteSessionDocs(s.uid)
       .then(loadSessions)
       .catch(function (e) { alert("Poisto epaonnistui: " + e.message); });
   }
+
+  // Massapoisto: nimeamattomat (?)-sessiot joissa viimeisin
+  // aktiviteetti yli 12 h sitten. Nimimerkin antaneet ja
+  // vasta pelaavat sailyvat koskemattomina.
+  var PURGE_AGE_MS = 12 * 3600 * 1000;
+  function purgeStale() {
+    var cutoff = Date.now() - PURGE_AGE_MS;
+    var stale = allSessions.filter(function (s) {
+      var ts = s.lastActiveAt || s.createdAt;
+      return !s.nickname && ts && ts.toMillis() < cutoff;
+    });
+    if (!stale.length) {
+      alert("Ei yhtaan nimeamatonta sessiota yli 12 h vanhoja.");
+      return;
+    }
+    if (!confirm("Poistetaan " + stale.length + " kpl nimeamattomia (?)-sessioita,\n" +
+        "joiden viimeisin aktiviteetti on yli 12 h sitten.\n\nJatketaan?")) return;
+    var done = 0;
+    var p = Promise.resolve();
+    stale.forEach(function (s) {
+      p = p.then(function () {
+        return deleteSessionDocs(s.uid)
+          .then(function () { done++; })
+          .catch(function () {});
+      });
+    });
+    p.then(loadSessions).then(function () {
+      alert("Poistettu " + done + " / " + stale.length + " sessiota.");
+    });
+  }
+  $("btn-purge").addEventListener("click", purgeStale);
 })();

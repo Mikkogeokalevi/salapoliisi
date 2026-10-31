@@ -32,6 +32,9 @@
     </nav>
   </div>
 
+  <div class="muted mono" id="peeks-line"
+    style="font-size:.78rem;margin:-.4rem 0 1rem"></div>
+
   <div class="tabbar">
     <button class="tab on" data-tab="tab-sess">SESSIOT <span class="tab-n" id="n-sess"></span></button>
     <button class="tab" data-tab="tab-finals">RATKAISSEET <span class="tab-n" id="n-finals"></span></button>
@@ -46,6 +49,9 @@
         <option value="done">Valmiit</option>
         <option value="open">Kesken</option>
       </select>
+      <button class="btn danger" id="btn-purge" style="width:auto;white-space:nowrap"
+        title="Poistaa nimeamattomat (?)-sessiot joiden viimeisin aktiviteetti on yli 12 h sitten">
+        POISTA ? &gt;12h</button>
     </div>
 
     <table class="data" id="sess-table">

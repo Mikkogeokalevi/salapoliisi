@@ -39,6 +39,12 @@
   Engine.init = function () {
     return window.fb.ensurePlayerAuth().then(function (user) {
       Engine.user = user;
+      // Kurkkauslaskuri: jokainen pelin avaus kirjataan, mutta
+      // sessiodokumentti syntyy vasta kun pelaaja antaa nimimerkin.
+      db().collection("stats").doc("counters").set({
+        opens: firebase.firestore.FieldValue.increment(1),
+        lastOpenAt: window.fb.serverTs()
+      }, { merge: true }).catch(function () {});
       return Promise.all([
         db().collection("config").doc("game").get(),
         db().collection("steps").get()
@@ -101,6 +107,9 @@
 
   Engine._sessionCreated = false;
   Engine._touchSession = function () {
+    // Sessioita kirjataan vain nimimerkin antaneista pelaajista.
+    // Pelkkaa pelin avausta ei lasketa sessioksi (stats.opens kertoo ne).
+    if (!Engine.nickname) return Promise.resolve();
     var data = {
       nickname: Engine.nickname || null,
       lastActiveAt: window.fb.serverTs(),

@@ -88,6 +88,14 @@ service cloud.firestore {
       }
     }
 
+    // Tilastolaskurit (pelin avaukset = "kurkkaajat").
+    // Pelaaja saa paivittaa vain laskurikentat - ei muuta sisaltoa.
+    match /stats/{doc} {
+      allow get, list: if isAdmin();
+      allow create, update: if isSignedIn()
+        && request.resource.data.keys().hasOnly(['opens', 'lastOpenAt']);
+    }
+
     // Kaikki muu kielletty
     match /{document=**} {
       allow read, write: if false;
