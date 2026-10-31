@@ -16,7 +16,7 @@ window.Steps["snake"] = function (container, step, api) {
   U.prompt(container, step.prompt);
   var g = U.game();
   var status = U.statusLine(container,
-    "Pyyhkäise ruutua tai käytä nuolinäppäimiä – " + APPLES + " omenaa, varo pommeja!");
+    "Pyyhkäise ruudulla tai käytä nuolinäppäimiä – " + APPLES + " omenaa, varo pommeja!");
 
   var SZ = Math.min(360, Math.floor(window.innerWidth * 0.88));
   var cv = U.canvas(container, SZ, SZ);

@@ -163,7 +163,7 @@ window.Steps["breakout"] = function (container, step, api) {
       if (navigator.vibrate) navigator.vibrate(80);
       if (window.Audio) window.Audio.error();
       if (lives <= 0) {
-        status.set("Elämät loppu – aloitetaan alusta");
+        status.set("Elämät loppuivat – aloitetaan alusta");
         reset(false);
       } else {
         status.set("Pallot menivät! Elämiä: " + lives);

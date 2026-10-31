@@ -135,7 +135,7 @@ window.Steps["range"] = function (container, step, api) {
     if (misses >= MAXMISS) {
       misses = 0; hits = 0;
       cells.forEach(removeTarget);
-      status.set("Rata nollattu – alusta");
+      status.set("Rata nollattu – aloita alusta");
       g.timeout(900, setStatus);
     }
   }

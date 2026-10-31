@@ -24,7 +24,7 @@ window.Steps["flappy"] = function (container, step, api) {
     if (armed) return;
     armed = true;
     if (startBtn) { startBtn.parentNode.remove(); startBtn = null; }
-    status.set("Kosketa ruutua noustaaksesi");
+    status.set("Kosketa ruutua noustaksesi");
   }, true);
   // nappi canvasin YLAPUOLELLE - muuten se jaa sheetin alareunan alle
   container.insertBefore(startBtn.parentNode, cv.el);

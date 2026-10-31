@@ -463,7 +463,7 @@ window.Steps["laser"] = function (container, step, api) {
   }
 
   function startLevel() {
-    if (!gen()) { status.set("Rataa ei saatu luotua – sulje ja avaa uudelleen"); return; }
+    if (!gen()) { status.set("Rataa ei saatu luotua – sulje peli ja avaa se uudelleen"); return; }
     setupCanvas();
     var lv = LEVELS[li];
     status.set("TASO " + (li + 1) + " / " + LEVELS.length +
@@ -475,7 +475,7 @@ window.Steps["laser"] = function (container, step, api) {
   var fb = U.feedback(container);
   var submit = U.submitter(container, api, fb);
   U.hint(container, api);
-  U.button(container, "Arpoo uuden radan", function () {
+  U.button(container, "Arvo uusi rata", function () {
     if (done) return;
     taps = 0;
     startLevel();
