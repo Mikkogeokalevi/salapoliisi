@@ -7,8 +7,8 @@
 <title>Mikkokalevin salapoliisitoimisto</title>
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="stylesheet" href="css/base.css?v=20261031b">
-<link rel="stylesheet" href="css/game.css?v=20261031b">
+<link rel="stylesheet" href="css/base.css?v=20261031c">
+<link rel="stylesheet" href="css/game.css?v=20261031c">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -61,26 +61,26 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
-<script src="js/config.js?v=20261031b"></script>
-<script src="js/firebase-init.js?v=20261031b"></script>
-<script src="js/audio.js?v=20261031b"></script>
-<script src="js/engine.js?v=20261031b"></script>
-<script src="js/story.js?v=20261031b"></script>
-<script src="js/steps/common.js?v=20261031b"></script>
+<script src="js/config.js?v=20261031c"></script>
+<script src="js/firebase-init.js?v=20261031c"></script>
+<script src="js/audio.js?v=20261031c"></script>
+<script src="js/engine.js?v=20261031c"></script>
+<script src="js/story.js?v=20261031c"></script>
+<script src="js/steps/common.js?v=20261031c"></script>
 <!-- V1 lataa vain 10 pulmatyyppia joita seed/tuotanto kayttaa.
      V2-tyypit (eivatka lataudu pelaajalle): text coords lock cipher
      morse wires order grid mapClick runner memory mastermind targets
      catch stack - ne loytyvat js/steps/-kansiosta v2-kehitysta varten. -->
-<script src="js/steps/range.js?v=20261031b"></script>
-<script src="js/steps/sequence.js?v=20261031b"></script>
-<script src="js/steps/snake.js?v=20261031b"></script>
-<script src="js/steps/laser.js?v=20261031b"></script>
-<script src="js/steps/breakout.js?v=20261031b"></script>
-<script src="js/steps/maze.js?v=20261031b"></script>
-<script src="js/steps/mines.js?v=20261031b"></script>
-<script src="js/steps/flappy.js?v=20261031b"></script>
-<script src="js/steps/hanoi.js?v=20261031b"></script>
-<script src="js/steps/slider15.js?v=20261031b"></script>
+<script src="js/steps/range.js?v=20261031c"></script>
+<script src="js/steps/sequence.js?v=20261031c"></script>
+<script src="js/steps/snake.js?v=20261031c"></script>
+<script src="js/steps/laser.js?v=20261031c"></script>
+<script src="js/steps/breakout.js?v=20261031c"></script>
+<script src="js/steps/maze.js?v=20261031c"></script>
+<script src="js/steps/mines.js?v=20261031c"></script>
+<script src="js/steps/flappy.js?v=20261031c"></script>
+<script src="js/steps/hanoi.js?v=20261031c"></script>
+<script src="js/steps/slider15.js?v=20261031c"></script>
 
 <script>
 (function () {
@@ -364,6 +364,20 @@
       copyToClipboard(hint, bh, "KOPIOI VIHJE");
     });
     card.appendChild(bh);
+
+    // Linkki kaytkaan sivulle (geocaching.com). rewards/final.cacheUrl
+    // ohittaa oletuksen; varalla sivun oma GC-osoite.
+    var cacheUrl = fr.cacheUrl ||
+      "https://www.geocaching.com/geocache/GCBVFYZ_mikkokalevin-salapoliisitoimisto";
+    var a = document.createElement("a");
+    a.className = "btn ghost";
+    a.style.marginTop = ".5rem";
+    a.style.textDecoration = "none";
+    a.href = cacheUrl;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    a.textContent = "AVAA KÄTKÖN SIVU ↗";
+    card.appendChild(a);
 
     Story.card(card);
   }

@@ -31,8 +31,9 @@ Firebase compat SDK 10.12.2 CDN:stä. Leaflet 1.9.4 CDN:stä.
 - `steps/step_N` on julkinen — ei vastauksia sinne
 - `solutions/step_N.answers[]` normalisoitu: `trim().toLowerCase()`, välit yhtenäistetty
 - `rewards/step_N.{codePart,revealText}` (+`rewards/final` voi sisältää
-  `coords` ja `hint` → loppukortin kopioitavat kentät; ilman niitä
-  koordinaatit poimitaan revealText:stä regexillä)
+  `coords`, `hint` ja `cacheUrl` → loppukortin kopioitavat kentät +
+  kätkösivulinkki; ilman niitä koordinaatit poimitaan revealText:stä
+  regexillä ja linkki osoittaa GCBVFYZ-sivulle)
 - `solved/{uid}_{stepId}`, `sessions/{uid}`, `sessions/{uid}/wrongAnswers`
 - Loppukoodi: `solutions/final` + `rewards/final`
 
