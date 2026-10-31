@@ -146,6 +146,17 @@
     var guess = Engine.normalize(guessRaw);
     if (!guess) return Promise.resolve({ ok: false, empty: true });
 
+    // Jo ratkaistu vaihe: palauta valmiit tiedot lahettamatta uutta
+    // kirjoitusta. Muuten tuplaklikkaus osuisi .set()-updateen, jonka
+    // saannot evaavat -> oikea vastaus kirjattaisiin vaaraksi.
+    if (Engine.solved[stepId]) {
+      return Promise.resolve({
+        ok: true,
+        reveal: Engine.reveals[stepId],
+        codePart: Engine.codeParts[stepId]
+      });
+    }
+
     return db().collection("solved").doc(uid + "_" + stepId).set({
       uid: uid,
       step: stepId,

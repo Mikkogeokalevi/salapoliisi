@@ -7,6 +7,11 @@
   function norm(s) {
     return String(s == null ? "" : s).trim().toLowerCase().replace(/\s+/g, " ");
   }
+  function esc(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
 
   var stepsCache = {}; // id -> data
 
@@ -80,8 +85,8 @@
       var tr = document.createElement("tr");
       tr.innerHTML =
         "<td>" + (s.order || "") + "</td>" +
-        "<td>" + (s.title || s.id) + "</td>" +
-        '<td><span class="badge">' + s.type + "</span></td>" +
+        "<td>" + esc(s.title || s.id) + "</td>" +
+        '<td><span class="badge">' + esc(s.type) + "</span></td>" +
         '<td class="muted">…</td>' +
         '<td class="mono">…</td>' +
         '<td><button class="btn ghost btn-test" style="min-height:32px;padding:.2rem .8rem">Testaa</button></td>' +

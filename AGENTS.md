@@ -8,6 +8,8 @@ Firebase compat SDK 10.12.2 CDN:stä. Leaflet 1.9.4 CDN:stä.
 ## Komennot
 
 - Paikallinen ajo: `py -m http.server 8000` → http://localhost:8000
+- V1-tuotantobuild: `py tools/build_v1.py` → `dist/v1/` (vain V1-tiedostot,
+  script-tagit suodatetaan; dist/ on gitignored)
 - Julkaisu: `push-to-github.bat` (tavallinen push, EI force)
 - Firestore-säännöt: `firestore.rules` → liitä konsoliin tai `firebase deploy --only firestore:rules`
 - Datantuonti: avaa `tools/import.html` selaimessa admin-kirjautuneena
@@ -19,6 +21,10 @@ Firebase compat SDK 10.12.2 CDN:stä. Leaflet 1.9.4 CDN:stä.
 - `js/story.js` = chat-renderointi, `js/audio.js` = Web Audio
 - `js/steps/*.js` = pulmatyypit; rekisteröityvät `window.Steps[type]`
 - Pulmatyypin lisäys: luo tiedosto, rekisteröi tyyppi, lisää script-tag index.html:aan
+- V1 lataa vain 10 tyyppiä (range sequence snake laser breakout maze mines
+  flappy hanoi slider15) + common.js. Loput js/steps/-moduulit ovat V2-aluetta:
+  index.html EI saa ladata niitä; admin.html lataa kaikki esikatselua varten.
+  V1-lista on myös tools/build_v1.py:ssä.
 
 ## Data-sopimukset
 

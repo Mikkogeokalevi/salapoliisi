@@ -5,6 +5,14 @@
   var $ = function (id) { return document.getElementById(id); };
   function db() { return window.fb.db; }
 
+  // Escape pelaajien kirjoittamaa dataa (nimimerkit, vaarat arvaukset)
+  // ennen innerHTML-renderointia - muuten admin-sivu altistuu XSS:lle.
+  function esc(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
   var allSessions = [];
   var wrongAgg = {}; // step -> {value: count}
 
@@ -108,7 +116,7 @@
         ? Object.keys(s.hintsUsed).reduce(function (a, k) { return a + s.hintsUsed[k]; }, 0)
         : 0;
       tr.innerHTML =
-        "<td><b>" + (s.nickname || "?") + "</b></td>" +
+        "<td><b>" + esc(s.nickname || "?") + "</b></td>" +
         "<td>" + (s.currentStep || 0) + "/" + (s.stepsTotal || "?") +
           " <span class='muted'>(" + (s._wrongCount || 0) + " vaaraa)</span></td>" +
         "<td>" + hints + "</td>" +
@@ -142,8 +150,8 @@
         var html = '<table class="data"><thead><tr><th>Vaihe</th><th>Arvaus</th><th>Aika</th></tr></thead><tbody>';
         qs.docs.forEach(function (d) {
           var w = d.data();
-          html += "<tr><td>" + w.step + "</td><td class='mono'>" +
-            (w.value || "") + "</td><td class='muted'>" + fmtTs(w.at) + "</td></tr>";
+          html += "<tr><td>" + esc(w.step) + "</td><td class='mono'>" +
+            esc(w.value || "") + "</td><td class='muted'>" + fmtTs(w.at) + "</td></tr>";
         });
         body.innerHTML = html + "</tbody></table>";
       });
@@ -178,14 +186,13 @@
         var byUid = {};
         allSessions.forEach(function (s) { byUid[s.uid] = s; });
         rows.forEach(function (r, i) {
-          var r = d.data();
           var sess = byUid[r.uid] || {};
           var tr = document.createElement("tr");
           var dur = (r.at && sess.createdAt)
             ? fmtDur(r.at.toMillis() - sess.createdAt.toMillis()) : "-";
           tr.innerHTML =
             "<td>" + (i + 1) + "</td>" +
-            "<td><b>" + (sess.nickname || r.uid.slice(0, 8) + "…") + "</b></td>" +
+            "<td><b>" + esc(sess.nickname || r.uid.slice(0, 8) + "…") + "</b></td>" +
             "<td class='muted'>" + fmtTs(r.at) + "</td>" +
             "<td class='muted'>" + fmtTs(sess.createdAt) + "</td>" +
             "<td>" + dur + "</td>";
@@ -207,14 +214,14 @@
     }
     var html = "";
     keys.forEach(function (step) {
-      html += "<div style='margin-bottom:.8rem'><b class='mono'>" + step + "</b><br>";
+      html += "<div style='margin-bottom:.8rem'><b class='mono'>" + esc(step) + "</b><br>";
       var vals = Object.keys(wrongAgg[step])
         .map(function (v) { return { v: v, n: wrongAgg[step][v] }; })
         .sort(function (a, b) { return b.n - a.n; })
         .slice(0, 5);
       vals.forEach(function (x) {
         html += '<span class="badge err" style="margin:.2rem .3rem 0 0">' +
-          x.v + " × " + x.n + "</span>";
+          esc(x.v) + " × " + x.n + "</span>";
       });
       html += "</div>";
     });

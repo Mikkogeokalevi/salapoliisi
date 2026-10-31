@@ -18,3 +18,6 @@ desktop.ini
 
 # geocaching-kuvauspohjat (ei sivustolle)
 katkokuvaus*.html
+
+# Build-artefaktit (generoitu, ei versionhallintaan)
+dist/
